@@ -2,7 +2,7 @@ param(
 	[Parameter(Mandatory, Position = 1)]
 	[Int32]$number,
 	[Parameter(Position = 2)]
-	[Int32]$translation = 2,
+	[Int32]$translation = 30,
 	[Parameter(Mandatory, Position = 0)]
 	[String]$link
 )
@@ -25,13 +25,17 @@ $referrer = 'https://animego.me/'
 $html = curl -X GET -s -e $referrer -A $agent $animeUrl
 
 $html = [System.Net.WebUtility]::HtmlDecode($html)
-$html -match "data-parameters=`"{(?<parms>[^ ]*)}`"" > $null
-$result = '{' + $Matches.parms + '}'
+$html -match "data-parameters=`"{(?<parameters>[^ ]*)}`"" > $null
+$result = '{' + $Matches.parameters + '}'
 $json = ConvertFrom-Json -InputObject $result
 switch -regex ($json.hls)
 {
-	'(?<link>https:[^ ]*8)' {
+	'(?<link>https:[^ ]*m3u8)' {
 		$m3u8 = $Matches.link.Replace('\/', '/')
 		& .\open_vlc_player.ps1 -blob $m3u8
+	}
+	'(?<link>https:[^ ]*mpd)' {
+		$mpv = $Matches.link.Replace('\/', '/')
+		& .\open_vlc_player.ps1 -blob $mpv
 	}
 }
