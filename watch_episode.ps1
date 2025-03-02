@@ -8,21 +8,42 @@ param(
 )
 
 Add-Type -AssemblyName 'System.Net'
-$agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0" 
-$referrer = $link
-
 $link -match "a(?<number>\d\d\d\d)" > $null
-$playerLink = 'https://animego.me/anime/' + $Matches.number + `
-							'/player?_allow=true'
-$html = curl -X GET -s -H 'x-requested-with: XMLHttpRequest' -e $referrer -A $agent $playerLink
+$headers = @{
+	'x-requested-with' = 'XMLHttpRequest'
+	'Referer'        = $link
+	'User-Agent'     = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0'
+	'Accept'         = 'application/json, text/javascript, */*; q=0.01'
+}
 
-$json = ConvertFrom-Json -InputObject $html
-$json.content -match "//aniboom`.one/embed/(?<hash>[^?]*)?" > $null
+$links = @( 'animego.me', 'animego.club', 'animego.org' )
+foreach ($postfixVariant in $links) {
+	$playerLink = "https://$postfixVariant/anime/" + $Matches.number + '/player?_allow=true'
+	try {
+		$response = Invoke-RestMethod -Uri $playerLink -Method 'Get' -Headers $headers -TimeoutSec 1
+		if ($response.status -eq 'success') {
+			Write-Output "Successfuly retrieved from $postfixVariant"
+			$html = $response.content
+			break;
+		}
+	}
+	catch {
+		Write-Output "$postfixVariant did not succeed"
+		continue;
+	}
+}
+
+if ($null -eq $html) {
+	Write-Output 'Content is empty'
+	return;
+}
+
+$html -match "//aniboom`.one/embed/(?<hash>[^?]*)?" > $null
 
 $animeUrl = 'https://aniboom.one/embed/' + $Matches.hash + `
 						"?episode=$number&translation=$translation"
-$referrer = 'https://animego.me/'
-$html = curl -X GET -s -e $referrer -A $agent $animeUrl
+$headers.Referer = 'https://animego.me/'
+$html = Invoke-RestMethod -Uri $animeUrl -Method 'Get' -Headers $headers -TimeoutSec 1
 
 $html = [System.Net.WebUtility]::HtmlDecode($html)
 $html -match "data-parameters=`"{(?<parameters>[^ ]*)}`"" > $null
