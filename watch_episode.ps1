@@ -8,7 +8,7 @@ param(
 )
 
 Add-Type -AssemblyName 'System.Net'
-$link -match "a(?<number>\d\d\d\d)" > $null
+$link -match "-(?<number>\d\d\d\d)" > $null
 $headers = @{
 	'x-requested-with' = 'XMLHttpRequest'
 	'Referer'        = $link
