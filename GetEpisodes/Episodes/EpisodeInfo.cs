@@ -1,4 +1,4 @@
-﻿namespace GetEpisodes
+﻿namespace GetEpisodes.Episodes
 {
 	sealed class EpisodeInfo
 	{
