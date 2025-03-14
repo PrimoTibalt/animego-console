@@ -6,7 +6,7 @@ param(
 $OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
 Clear-Host
 Add-Type -AssemblyName 'System.Net'
-$html = & ./open_player_link.ps1 $link
+$html = ./open_player_link.ps1 $link
 if ($null -eq $html) {
 	Write-Host 'Unable to fetch player link, site is down or antiddos kicked in'
 	return
@@ -27,7 +27,7 @@ if ($episodes.Count -gt 0) {
 	if ($null -ne $dataId)
 	{
 		Write-Host "Selected episode with data id $dataId"
-		& ./select_dubbing.ps1 $link $dataId
+		./select_dubbing.ps1 $link $dataId
 	}
 } else {
 	Write-Error 'No episodes found'

@@ -5,7 +5,7 @@ param(
 	$episodeDataId
 )
 
-$html = & ./open_player_link.ps1 $link $episodeDataId
+$html = ./open_player_link.ps1 $link $episodeDataId
 
 $listOfDubs = ./tool/GetEpisodes.exe 'translations' $html
 if ($null -eq $listOfDubs) {
@@ -25,10 +25,10 @@ foreach ($dub in $listOfDubs.Split(';')) {
 	$dict[$namePlayersPair[0]] = $subDict
 }
 
-$players = & ./helpers/select.ps1 $dict 'Select dubber:'
+$players = ./helpers/select.ps1 $dict 'Select dubber:'
 if ($null -ne $players) {
-	$link = & ./helpers/select.ps1 $players 'Select player:'
+	$link = ./helpers/select.ps1 $players 'Select player:'
 	if ($null -ne $link) {
-		& ./watch_episode.ps1 $link
+		./watch_episode.ps1 $link
 	}
 }
