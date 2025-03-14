@@ -14,6 +14,7 @@ $inputs = @{
 
 $selected = 0
 $options = [System.Management.Automation.Host.ReadKeyOptions]"NoEcho" + [System.Management.Automation.Host.ReadKeyOptions]"IncludeKeyDown"
+$count = $dict.Keys.Count
 
 Write-Host $message
 while ($true) {
@@ -30,7 +31,7 @@ while ($true) {
 
 	$pressedKey = $Host.UI.RawUI.ReadKey($options)
 
-	& ./helpers/clean_console.ps1 $dict.Keys.Count
+	./helpers/clean_console.ps1 $count
 
 	if ($pressedKey.VirtualKeyCode -eq '0') {
 		return
@@ -45,10 +46,10 @@ while ($true) {
 		$val = $inputs[$keyPressed]
 		$selected = $selected + $val
 		if ($selected -lt 0) {
-			$selected = $dict.Keys.Count-1
+			$selected = $count - 1
 		}
  
-		if ($dict.Keys.Count-1 -lt $selected) {
+		if ($count -1 -lt $selected) {
 			$selected = 0
 		}
 	}
