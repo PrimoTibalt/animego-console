@@ -1,4 +1,5 @@
 param(
+	[Parameter(Position = 0, Mandatory)]
 	[string] $blob
 )
 
