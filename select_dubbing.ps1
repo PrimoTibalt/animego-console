@@ -30,10 +30,15 @@ foreach ($dub in $listOfDubs.Split(';')) {
 $players = ./helpers/select.ps1 $dict 'Select dubber:'
 if ($null -ne $players) {
 	$episodeLink = ./helpers/select.ps1 $players 'Select player:'
-	if ($null -ne $link) {
+	if (-not [string]::IsNullOrEmpty($episodeLink)) {
 		Write-Host "You are watching $episodeLink"
 		Write-Host 'Click any button to return '
 		./watch_episode.ps1 $episodeLink
 		[Console]::ReadKey($true)
+		return 'Seen'
+	} else {
+		./select_dubbing.ps1 $link $episodeDataId
 	}
+} else {
+	return $null
 }

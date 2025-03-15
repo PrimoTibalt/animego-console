@@ -2,7 +2,9 @@ param(
 	[Parameter(Position = 0, Mandatory)]
 	[System.Collections.Specialized.OrderedDictionary]$dict,
 	[Parameter(Position = 1)]
-	[string]$message
+	[string]$message,
+	[Parameter(Position = 2)]
+	[bool]$withFallback = $true
 )
 
 $inputs = @{
@@ -10,6 +12,9 @@ $inputs = @{
 	'38' = -1;
 	'74' = 1;
 	'40' = 1
+}
+if ($withFallback) {
+	$dict["-"] = $null
 }
 
 $selected = 0
