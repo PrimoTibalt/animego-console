@@ -1,33 +1,13 @@
 Add-Type -AssemblyName 'System.Net'
 
-$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+[Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+chcp 65001
 Clear-Host
 
 $text = ''
 $dict = [ordered]@{}
 while ($true) {
-	[Console]::SetCursorPosition($text.Length, 0)
-	$key = $Host.UI.RawUI.ReadKey("IncludeKeyDown");
-	if ($key.VirtualKeyCode -eq '13') {
-		$animeLink = ./helpers/select.ps1 $dict
-		./select_episode.ps1 "https://animego.one$animeLink"
-		continue
-	}
-
-	if ($key.VirtualKeyCode -eq '0') {
-		return
-	}
-
-	if ($key.VirtualKeyCode -eq '8') {
-		if (-not [string]::IsNullOrEmpty($text)) {
-			[Console]::Write("{0,-1}" -f "")
-			$text = $text.Substring(0, $text.Length - 1)
-		}
-		continue
-	}
-
-	$text = $text + $key.Character
 	if ($text.Length -ge 4) {
 		if ($dict.Count -gt 0) {
 			[Console]::SetCursorPosition(0, $dict.Count)
@@ -37,10 +17,12 @@ while ($true) {
 
 		$queryString = "search/all?type=small&q=$text&_=1741983593650"
 		$html = ./helpers/try_request.ps1 $queryString 
-		$data = ./tool/GetEpisodes.exe "search" $html 2> ./temp/log.txt
-		if ($null -ne $data) {
+		$content = [System.Net.WebUtility]::HtmlDecode($html)
+		$data = ./tool/GetEpisodes.exe "search" $content 2> ./temp/log.txt
+		if (-not [string]::IsNullOrWhiteSpace($data)) {
+			$dict = [ordered]@{}
 			foreach ($pair in $data.Split(';')) {
-				$pair = $pair.Split(',')
+				$pair = $pair.Split('||')
 				$dict[$pair[0]] = $pair[1]
 			}
 		}
@@ -50,4 +32,28 @@ while ($true) {
 			Write-Host $pair.Key
 		}
 	}
+
+	[Console]::SetCursorPosition(0, 0)
+	[Console]::Write("{0, 120}" -f "")
+	[Console]::SetCursorPosition(0, 0)
+	[Console]::Write("$text")
+	$key = [Console]::ReadKey($true)
+
+	if ($key.Key -eq [System.ConsoleKey]::Enter -and $dict.Count -gt 0) {
+		[Console]::SetCursorPosition(0, 1)
+		$animeLink = ./helpers/select.ps1 $dict
+		./select_episode.ps1 "https://animego.one$animeLink"
+		Clear-Host
+		continue
+	}
+
+	if ($key.Key -eq [System.ConsoleKey]::Backspace) {
+		if (-not [string]::IsNullOrEmpty($text)) {
+			[Console]::Write("{0,-1}" -f "")
+			$text = $text.Substring(0, $text.Length - 1)
+		}
+		continue
+	}
+
+	$text = $text + $key.KeyChar
 }

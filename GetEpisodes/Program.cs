@@ -11,6 +11,7 @@ namespace GetEpisodes
 	{
 		static void Main(string[] args)
 		{
+			InputEncoding = Encoding.UTF8;
 			OutputEncoding = Encoding.UTF8;
 
 			var configuration = new ConfigurationBuilder()
@@ -20,7 +21,11 @@ namespace GetEpisodes
 			var selectors = configuration.GetSection("Selectors");
 			var doc = new HtmlDocument();
 
-			doc.LoadHtml(args[1]);
+			var html = args[1];
+			if (args.Count() > 2)
+				html = string.Join(string.Empty, args[1..]);
+
+			doc.LoadHtml(html);
 			switch (args[0])
 			{
 				case "episodes":
@@ -51,12 +56,12 @@ namespace GetEpisodes
 
 					break;
 				case "search":
-					var animes = doc.DocumentNode.SelectNodes(selectors["animeSelector"]);
+					var animes = doc.DocumentNode.SelectNodes(selectors["animeSelector"]) ?? (IList<HtmlNode>)[];
 					for (var i = 0; i < animes.Count; i++)
 					{
 						var anime = animes.ElementAt(i);
 						var href = anime.GetAttributeValue<string>("href", string.Empty).Trim();
-						Out.Write($"{anime.InnerText.Trim()},{href}");
+						Out.Write($"{anime.InnerText.Trim()}||{href}");
 						if (i < animes.Count - 1)
 							Out.Write(";");
 					}

@@ -12,7 +12,7 @@ if ($null -eq $html) {
 	return
 }
 
-$episodes = ./tool/GetEpisodes.exe 'episodes' $html 2> ./temp/log.txt > ./temp/example.txt
+$episodes = ./tool/GetEpisodes.exe 'episodes' $html 2> ./temp/log.txt
 if ([string]::IsNullOrEmpty($episodes)) {
 	Write-Host 'No episodes found'
 	return
@@ -28,7 +28,7 @@ if ($episodes.Count -gt 0) {
 		$dict.Add($key, $value)
 	}
 
-	$dataId = & ./helpers/select.ps1 $dict 'Select episode:'
+	$dataId = ./helpers/select.ps1 $dict 'Select episode:'
 	if ($null -ne $dataId)
 	{
 		Write-Host "Selected episode with data id $dataId"

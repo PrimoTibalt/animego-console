@@ -16,7 +16,10 @@ $selected = 0
 $options = "NoEcho,IncludeKeyDown"
 $count = $dict.Keys.Count
 
-Write-Host $message
+if (-not [string]::IsNullOrEmpty($message)) {
+	Write-Host $message
+}
+
 while ($true) {
 	$index = 0
 	foreach ($pair in $dict.GetEnumerator()) {
@@ -30,10 +33,9 @@ while ($true) {
 	}
 
 	$pressedKey = $Host.UI.RawUI.ReadKey($options)
-
 	./helpers/clean_console.ps1 $count
 
-	if ($pressedKey.VirtualKeyCode -eq '0') {
+	if (-not $Host.Name -like "*Visual Studio Code*" -and $pressedKey.VirtualKeyCode -eq '0') {
 		return
 	}
 
