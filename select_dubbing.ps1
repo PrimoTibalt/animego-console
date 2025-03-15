@@ -7,7 +7,7 @@ param(
 
 $html = ./open_player_link.ps1 $link $episodeDataId
 
-$listOfDubs = ./tool/GetEpisodes.exe 'translations' $html
+$listOfDubs = ./tool/GetEpisodes.exe 'translations' $html 2> ./helper/log.txt
 if ($null -eq $listOfDubs) {
 	Write-Host 'No dubs available'
 	return

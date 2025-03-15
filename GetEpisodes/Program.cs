@@ -9,7 +9,7 @@ namespace GetEpisodes
 {
 	internal class Program
 	{
-		async static Task Main(string[] args)
+		static void Main(string[] args)
 		{
 			OutputEncoding = Encoding.UTF8;
 
@@ -46,6 +46,18 @@ namespace GetEpisodes
 						prev + "||" + current);
 						Out.Write($"{translation.Name},{linksCombination}");
 						if (i < translations.Count - 1)
+							Out.Write(";");
+					}
+
+					break;
+				case "search":
+					var animes = doc.DocumentNode.SelectNodes(selectors["animeSelector"]);
+					for (var i = 0; i < animes.Count; i++)
+					{
+						var anime = animes.ElementAt(i);
+						var href = anime.GetAttributeValue<string>("href", string.Empty).Trim();
+						Out.Write($"{anime.InnerText.Trim()},{href}");
+						if (i < animes.Count - 1)
 							Out.Write(";");
 					}
 

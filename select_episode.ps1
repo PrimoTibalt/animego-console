@@ -3,16 +3,21 @@ param(
 	[string]$link
 )
 
-$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
-Clear-Host
 Add-Type -AssemblyName 'System.Net'
+$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+
 $html = ./open_player_link.ps1 $link
 if ($null -eq $html) {
 	Write-Host 'Unable to fetch player link, site is down or antiddos kicked in'
 	return
 }
 
-$episodes = ./tool/GetEpisodes.exe 'episodes' $html
+$episodes = ./tool/GetEpisodes.exe 'episodes' $html 2> ./temp/log.txt > ./temp/example.txt
+if ([string]::IsNullOrEmpty($episodes)) {
+	Write-Host 'No episodes found'
+	return
+}
+
 $episodes = $episodes.Split(';')
 if ($episodes.Count -gt 0) {
 	$dict = [ordered]@{}

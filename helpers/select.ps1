@@ -13,7 +13,7 @@ $inputs = @{
 }
 
 $selected = 0
-$options = [System.Management.Automation.Host.ReadKeyOptions]"NoEcho" + [System.Management.Automation.Host.ReadKeyOptions]"IncludeKeyDown"
+$options = "NoEcho,IncludeKeyDown"
 $count = $dict.Keys.Count
 
 Write-Host $message
