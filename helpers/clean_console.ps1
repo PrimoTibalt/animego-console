@@ -6,9 +6,19 @@ param(
 $currentLine = $Host.UI.RawUI.CursorPosition.Y
 $consoleWidth = $Host.UI.RawUI.BufferSize.Width
 $i = $currentLine - $count
-for ($i; $i -le $currentLine + 1; $i++) {
-	[Console]::SetCursorPosition(0, $i)
-	[Console]::Write("{0,-$consoleWidth}" -f "")
-}
+try {
+	for ($i; $i -le $currentLine + 1; $i++) {
+		[Console]::SetCursorPosition(0, $i)
+		[Console]::Write("{0,-$consoleWidth}" -f "")
+	}
+} catch {}
 
-[Console]::SetCursorPosition(0, $currentLine - $count)
+try {
+	[Console]::SetCursorPosition(0, $currentLine - $count)
+} catch {
+	for ($i = 0; $i -lt $count; $i++) {
+		try {
+			[Console]::SetCursorPosition(0, $currentLine - $i)
+		} catch {}
+	}
+}

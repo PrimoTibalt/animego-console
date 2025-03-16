@@ -4,9 +4,14 @@ param(
 	[Parameter(Position = 1)]
 	[string]$message,
 	[Parameter(Position = 2)]
-	[bool]$withFallback = $true
+	[bool]$withFallback = $true,
+	[Parameter(Position = 3)]
+	[bool]$returnKey = $false,
+	[Parameter(Position = 4)]
+	$preselectedValue
 )
 
+$fallbackSign = '__'
 $inputs = @{
 	'75' = -1;
 	'38' = -1;
@@ -14,10 +19,17 @@ $inputs = @{
 	'40' = 1
 }
 if ($withFallback) {
-	$dict["-"] = $null
+	$dict = [ordered]@{ $fallbackSign = $null } + $dict
 }
 
 $selected = 0
+if (-not [string]::IsNullOrWhiteSpace($preselectedValue)) {
+	$selected = $dict.Keys.IndexOf($preselectedValue)
+	if ($selected -lt 0) {
+		$selected = 0
+	}
+}
+
 $options = "NoEcho,IncludeKeyDown"
 $count = $dict.Keys.Count
 
@@ -62,11 +74,22 @@ while ($true) {
 	}
 }
 
+if (-not [string]::IsNullOrEmpty($message)) {
+	./helpers/clean_console.ps1 1
+}
+
 $index = 0
 foreach ($pair in $dict.GetEnumerator()) {
 	if ($index -eq $selected) {
 		$key = $pair.Key
-		Write-Host "You chose $key"
+		if ($key -ne $fallbackSign) {
+			Write-Host "You chose $key"
+		}
+
+		if ($returnKey) {
+			return $key
+		}
+
 		return $dict.$key
 	}
 

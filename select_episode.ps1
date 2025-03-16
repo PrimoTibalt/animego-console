@@ -29,15 +29,18 @@ if ($episodes.Count -lt 0) {
 $dict = [ordered]@{}
 foreach ($episode in $episodes) {
 	$pair = $episode.Split(',')
-	$key = [System.Int32]::Parse($pair[0])
-	$value = [System.Int32]::Parse($pair[1])
+	$key = $pair[0].Trim()
+	$value = $pair[1].Trim()
 	$dict.Add($key, $value)
 }
 
-$dataId = ./helpers/select.ps1 $dict 'Select episode:'
+$preselectedEpisode = ./helpers/state_management/get_episode.ps1
+$episodeNumber = ./helpers/select.ps1 $dict 'Select episode:' $true $true $preselectedEpisode
+$dataId = $dict.$episodeNumber
 if ($null -ne $dataId) {
-	Write-Host "Selected episode with data id $dataId"
+	./helpers/state_management/add_episode.ps1 $episodeNumber
 	./select_dubbing.ps1 $link $dataId
+	./helpers/clean_console.ps1 1
 	./select_episode.ps1 $link
 } else {
 	return $null

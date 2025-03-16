@@ -41,7 +41,9 @@ while ($true) {
 
 	if ($key.Key -eq [System.ConsoleKey]::Enter -and $dict.Count -gt 0) {
 		[Console]::SetCursorPosition(0, 1)
-		$animeLink = ./helpers/select.ps1 $dict $null $false
+		$name = ./helpers/select.ps1 $dict $null $false $true
+		$animeLink = $dict.$name
+		./helpers/state_management/create_state.ps1 $name
 		./select_episode.ps1 "https://animego.one$animeLink"
 		Clear-Host
 		continue
