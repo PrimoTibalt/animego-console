@@ -1,2 +1,2 @@
-$json = Get-Content ./temp/state.json | ConvertFrom-Json
+$json = Get-Content "$PSScriptRoot/../../temp/state.json" | ConvertFrom-Json
 return $json.dub

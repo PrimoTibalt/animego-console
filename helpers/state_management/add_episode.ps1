@@ -3,4 +3,4 @@ param(
 	[int]$episodeNumber
 )
 
-./helpers/state_management/append_property.ps1 "episode" "$episodeNumber"
+."$PSScriptRoot/append_property.ps1" 'episode' "$episodeNumber"

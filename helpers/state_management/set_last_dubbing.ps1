@@ -3,4 +3,4 @@ param(
 	[string]$dubName
 )
 
-./helpers/state_management/append_property.ps1 "dub" $dubName
+. "$PSScriptRoot/append_property.ps1" 'dub' $dubName

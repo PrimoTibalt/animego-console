@@ -50,7 +50,7 @@ while ($true) {
 	}
 
 	$pressedKey = $Host.UI.RawUI.ReadKey($options)
-	./helpers/clean_console.ps1 $count
+	. "$PSScriptRoot/clean_console.ps1" $count
 
 	if (-not $Host.Name -like "*Visual Studio Code*" -and $pressedKey.VirtualKeyCode -eq '0') {
 		return
@@ -75,7 +75,7 @@ while ($true) {
 }
 
 if (-not [string]::IsNullOrEmpty($message)) {
-	./helpers/clean_console.ps1 1
+	. "$PSScriptRoot/clean_console.ps1" 1
 }
 
 $index = 0

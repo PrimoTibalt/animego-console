@@ -30,13 +30,13 @@ foreach ($postfixVariant in $links) {
 	try {
 		$response = Invoke-RestMethod -Uri $link -Method 'Get' -Headers $headers -TimeoutSec 2
 		if ($response.status -eq 'success') {
-			Set-Content ./temp/try_request_log.html $response.content
+			Set-Content "$PSScriptRoot/../temp/try_request_log.html" $response.content
 			return $response.content
 			break
 		}
 	}
 	catch {
-		Set-Content ./temp/try_request_log.html $response
+		Set-Content "$PSScriptRoot/../temp/try_request_log.html" $response
 		continue
 	}
 }

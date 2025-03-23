@@ -12,4 +12,4 @@ if ($null -ne $dataId) {
 	$cookie = "episode_video=$dataId"
 }
 
-return ./helpers/try_request.ps1 "anime/$number/player?_allow=true" $originalLink $cookie
+return . "$PSScriptRoot/helpers/try_request.ps1" "anime/$number/player?_allow=true" $originalLink $cookie

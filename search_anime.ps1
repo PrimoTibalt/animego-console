@@ -2,7 +2,7 @@ Add-Type -AssemblyName 'System.Net'
 
 [Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-chcp 65001
+chcp 65001 # UTF-8 code page
 Clear-Host
 
 $text = ''
@@ -12,13 +12,13 @@ while ($true) {
 		if ($dict.Count -gt 0) {
 			[Console]::SetCursorPosition(0, $dict.Count)
 			$toDeleteLines = $dict.Count - 1
-			./helpers/clean_console.ps1 $toDeleteLines
+			. "$PSScriptRoot/helpers/clean_console.ps1" $toDeleteLines
 		}
 
 		$queryString = "search/all?type=small&q=$text&_=1741983593650"
-		$html = ./helpers/try_request.ps1 $queryString 
+		$html = . "$PSScriptRoot/helpers/try_request.ps1" $queryString 
 		$content = [System.Net.WebUtility]::HtmlDecode($html)
-		$data = ./tool/GetEpisodes.exe "search" $content 2> ./temp/log.txt
+		$data = . "$PSScriptRoot/tool/GetEpisodes.exe" "search" $content 2> "$PSScriptRoot/temp/log.txt"
 		if (-not [string]::IsNullOrWhiteSpace($data)) {
 			$dict = [ordered]@{}
 			foreach ($pair in $data.Split(';')) {
@@ -33,18 +33,19 @@ while ($true) {
 		}
 	}
 
+	$widthOfConsole = $Host.UI.RawUI.BufferSize.Width
 	[Console]::SetCursorPosition(0, 0)
-	[Console]::Write("{0, 120}" -f "")
+	[Console]::Write("{0, $widthOfConsole}" -f "")
 	[Console]::SetCursorPosition(0, 0)
 	[Console]::Write("$text")
 	$key = [Console]::ReadKey($true)
 
 	if ($key.Key -eq [System.ConsoleKey]::Enter -and $dict.Count -gt 0) {
 		[Console]::SetCursorPosition(0, 1)
-		$name = ./helpers/select.ps1 $dict $null $false $true
+		$name = . "$PSScriptRoot/helpers/select.ps1" $dict $null $false $true
 		$animeLink = $dict.$name
-		./helpers/state_management/create_state.ps1 $name
-		./select_episode.ps1 "https://animego.one$animeLink"
+		. "$PSScriptRoot/helpers/state_management/create_state.ps1" $name
+		. "$PSScriptRoot/select_episode.ps1" "https://animego.one$animeLink"
 		Clear-Host
 		continue
 	}

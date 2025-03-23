@@ -20,10 +20,10 @@ switch -regex ($json.hls)
 {
 	'(?<link>https:[^ ]*m3u8)' {
 		$m3u8 = $Matches.link.Replace('\/', '/')
-		./helpers/open_vlc_player.ps1 -blob $m3u8
+		. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $m3u8
 	}
 	'(?<link>https:[^ ]*mpd)' {
 		$mpv = $Matches.link.Replace('\/', '/')
-		./helpers/open_vlc_player.ps1 -blob $mpv
+		. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $mpv
 	}
 }

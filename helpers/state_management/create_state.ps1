@@ -3,8 +3,8 @@ param(
 	[string]$animeName
 )
 
-if (Test-Path ./temp/state.json) {
-	$currentState = Get-Content ./temp/state.json 
+if (Test-Path "$PSScriptRoot/../../temp/state.json") {
+	$currentState = Get-Content "$PSScriptRoot/../../temp/state.json" 
 	if (-not [string]::IsNullOrEmpty($currentState)) {
 		$currentJson = ConvertTo-Json $currentState
 		if ($currentJson.name -eq $animeName) {
@@ -14,4 +14,4 @@ if (Test-Path ./temp/state.json) {
 }
 
 $json = "{""name"": ""$animeName""}"
-Set-Content ./temp/state.json $json
+Set-Content "$PSScriptRoot/../../temp/state.json" $json

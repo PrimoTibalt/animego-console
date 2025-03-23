@@ -6,15 +6,14 @@ param(
 )
 
 Add-Type -AssemblyName 'System.Net'
-$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
 
-$html = ./open_player_link.ps1 $link
+$html = . "$PSScriptRoot/open_player_link.ps1" $link
 if ($null -eq $html) {
 	Write-Host 'Unable to fetch player link, site is down or antiddos kicked in'
 	return
 }
 
-$episodes = ./tool/GetEpisodes.exe 'episodes' $html 2> ./temp/log.txt
+$episodes = . "$PSScriptRoot/tool/GetEpisodes.exe" 'episodes' $html 2> ./temp/log.txt
 if ([string]::IsNullOrEmpty($episodes)) {
 	Write-Host 'No episodes found'
 	return
@@ -34,14 +33,14 @@ foreach ($episode in $episodes) {
 	$dict.Add($key, $value)
 }
 
-$preselectedEpisode = ./helpers/state_management/get_episode.ps1
-$episodeNumber = ./helpers/select.ps1 $dict 'Select episode:' $true $true $preselectedEpisode
+$preselectedEpisode = . "$PSScriptRoot/helpers/state_management/get_episode.ps1"
+$episodeNumber = . "$PSScriptRoot/helpers/select.ps1" $dict 'Select episode:' $true $true $preselectedEpisode
 $dataId = $dict.$episodeNumber
 if ($null -ne $dataId) {
-	./helpers/state_management/add_episode.ps1 $episodeNumber
-	./select_dubbing.ps1 $link $dataId
-	./helpers/clean_console.ps1 1
-	./select_episode.ps1 $link
+	. "$PSScriptRoot/helpers/state_management/add_episode.ps1" $episodeNumber
+	. "$PSScriptRoot/select_dubbing.ps1" $link $dataId
+	. "$PSScriptRoot/helpers/clean_console.ps1" 1
+	. "$PSScriptRoot/select_episode.ps1" $link
 } else {
 	return $null
 }
