@@ -21,8 +21,15 @@ namespace GetEpisodes
 			var selectors = configuration.GetSection("Selectors");
 			var doc = new HtmlDocument();
 
-			var html = args[1];
-			if (args.Count() > 2)
+			var html = string.Empty;
+			if (args.Length < 2) {
+				var directoryPath = Directory.GetParent(Environment.ProcessPath).ToString();
+				html = File.ReadAllText(Path.Combine(directoryPath, args[0] + ".html"));
+			} else {
+				html = args[1];
+			}
+
+			if (args.Length > 2)
 				html = string.Join(string.Empty, args[1..]);
 
 			doc.LoadHtml(html);
