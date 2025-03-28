@@ -15,7 +15,7 @@ if ($null -eq $listOfDubs) {
 	return
 }
 
-$dict = [ordered]@{}
+$dictOfDubs = [ordered]@{}
 foreach ($dub in $listOfDubs.Split(';')) {
 	$namePlayersPair = $dub.Split(',')
 	$subDict = [ordered]@{}
@@ -26,12 +26,12 @@ foreach ($dub in $listOfDubs.Split(';')) {
 		}
 	}
 
-	$dict[$namePlayersPair[0]] = $subDict
+	$dictOfDubs[$namePlayersPair[0]] = $subDict
 }
 
 $preselectedDub = . "$PSScriptRoot/helpers/state_management/get_dub.ps1"
-$selectedDub = . "$PSScriptRoot/helpers/select.ps1" $dict 'Select dubber:' $true $true $preselectedDub
-$players = $dict.$selectedDub
+$selectedDub = . "$PSScriptRoot/helpers/select.ps1" $dictOfDubs 'Select dubber:' $true $true $preselectedDub
+$players = $dictOfDubs.$selectedDub
 if ($null -ne $players) {
 	. "$PSScriptRoot/helpers/state_management/set_last_dubbing.ps1" $selectedDub
 	$episodeLink = . "$PSScriptRoot/helpers/select.ps1" $players 'Select player:'
@@ -39,14 +39,15 @@ if ($null -ne $players) {
 		Write-Host "You are watching $episodeLink"
 		Write-Host 'Click any button to return '
 		. "$PSScriptRoot/watch_episode.ps1" $episodeLink
+		. "$PSScriptRoot/helpers/watched_management/synchronize_from_state.ps1"
 		[Console]::ReadKey($true)
 		# clean everything below anime name
 		# doesn't know if you went back and forth before starting watching
-		. "$PSScriptRoot/helpers/clean_console.ps1" 6
+		. "$PSScriptRoot/helpers/clean_console.ps1" 5
 		return 'Seen'
 	} else {
-		. "$PSScriptRoot/helpers/clean_console.ps1" 6
-		. "$PSScriptRoot/select_dubbing.ps1" $link $episodeDataId
+		. "$PSScriptRoot/helpers/clean_console.ps1" 1
+		return . "$PSScriptRoot/select_dubbing.ps1" $link $episodeDataId
 	}
 } else {
 	return $null

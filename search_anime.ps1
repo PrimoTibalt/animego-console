@@ -18,7 +18,7 @@ while ($true) {
 		$queryString = "search/all?type=small&q=$text&_=1741983593650"
 		$html = . "$PSScriptRoot/helpers/try_request.ps1" $queryString 
 		$content = [System.Net.WebUtility]::HtmlDecode($html)
-		$data = . "$PSScriptRoot/tool/GetEpisodes.exe" "search" $content 2> "$PSScriptRoot/temp/log.txt"
+		$data = . "$PSScriptRoot/tool/GetEpisodes.exe" 'search' $content 2> "$PSScriptRoot/temp/log.txt"
 		if (-not [string]::IsNullOrWhiteSpace($data)) {
 			$dict = [ordered]@{}
 			foreach ($pair in $data.Split(';')) {
@@ -43,9 +43,14 @@ while ($true) {
 	if ($key.Key -eq [System.ConsoleKey]::Enter -and $dict.Count -gt 0) {
 		[Console]::SetCursorPosition(0, 1)
 		$name = . "$PSScriptRoot/helpers/select.ps1" $dict $null $false $true
-		$animeLink = $dict.$name
-		. "$PSScriptRoot/helpers/state_management/create_state.ps1" $name
-		. "$PSScriptRoot/select_episode.ps1" "https://animego.one$animeLink"
+		$animeLinkFull = . "$PSScriptRoot/helpers/watched_management/synchronize_to_state.ps1" $name
+		if ([string]::IsNullOrEmpty($animeLinkFull)) {
+			$animeLink = $dict.$name
+			$animeLinkFull = "https://animego.one$animeLink"
+			. "$PSScriptRoot/helpers/state_management/create_state.ps1" $name $animeLinkFull
+		}
+
+		. "$PSScriptRoot/select_episode.ps1" $animeLinkFull
 		Clear-Host
 		continue
 	}
