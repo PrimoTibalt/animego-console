@@ -1,6 +1,8 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
-	[string]$animeName
+	[string]$animeName,
+	[Parameter(Mandatory, Position = 1)]
+	[string]$animeHref
 )
 
 if (Test-Path "$PSScriptRoot/../../temp/state.json") {
@@ -13,5 +15,5 @@ if (Test-Path "$PSScriptRoot/../../temp/state.json") {
 	}
 }
 
-$json = "{""name"": ""$animeName""}"
+$json = "{""name"": ""$animeName"", ""href"": ""$animeHref""}"
 Set-Content "$PSScriptRoot/../../temp/state.json" $json
