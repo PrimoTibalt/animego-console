@@ -1,6 +1,6 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
-	[string]$link,
+	[string]$fetchEpisodesLink,
 	[Parameter(Position = 1)]
 	[System.Collections.Specialized.OrderedDictionary]$dictOfEpisodes
 )
@@ -8,16 +8,16 @@ param(
 if ($null -eq $dictOfEpisodes) {
 	Add-Type -AssemblyName 'System.Net'
 
-	$html = . "$PSScriptRoot/open_player_link.ps1" $link
-	if ($null -eq $html) {
+	$fetchEpisodesResultHtml = . "$PSScriptRoot/open_player_link.ps1" $fetchEpisodesLink
+	if ($null -eq $fetchEpisodesResultHtml) {
 		Write-Host 'Unable to fetch player link, site is down or antiddos kicked in'
 		return
 	}
 
 	try {
-		$episodes = . "$PSScriptRoot/tool/GetEpisodes.exe" 'episodes' $html 2> "$PSScriptRoot/temp/log.txt"
+		$episodes = . "$PSScriptRoot/tool/GetEpisodes.exe" 'episodes' $fetchEpisodesResultHtml 2> "$PSScriptRoot/temp/log.txt"
 	} catch {
-		Set-Content "$PSScriptRoot/tool/episodes.html" $html
+		Set-Content "$PSScriptRoot/tool/episodes.html" $fetchEpisodesResultHtml
 		$episodes = . "$PSScriptRoot/tool/GetEpisodes.exe" 'episodes' 2> "$PSScriptRoot/temp/log.txt"
 	}
 
@@ -46,9 +46,9 @@ $episodeNumber = . "$PSScriptRoot/helpers/select.ps1" $dictOfEpisodes 'Select ep
 $dataId = $dictOfEpisodes.$episodeNumber
 if ($null -ne $dataId) {
 	. "$PSScriptRoot/helpers/state_management/add_episode.ps1" $episodeNumber
-	. "$PSScriptRoot/select_dubbing.ps1" $link $dataId
+	. "$PSScriptRoot/select_dubbing.ps1" $fetchEpisodesLink $dataId
 	. "$PSScriptRoot/helpers/clean_console.ps1" 1
-	. "$PSScriptRoot/select_episode.ps1" $link $dictOfEpisodes
+	. "$PSScriptRoot/select_episode.ps1" $fetchEpisodesLink $dictOfEpisodes
 } else {
 	return $null
 }

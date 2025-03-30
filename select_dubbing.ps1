@@ -1,13 +1,13 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
-	[string]$link,
+	[string]$linkToDubbingList,
 	[Parameter(Mandatory, Position = 1)]
 	$episodeDataId
 )
 
-$html = . "$PSScriptRoot/open_player_link.ps1" $link $episodeDataId
+$dubbingListHtml = . "$PSScriptRoot/open_player_link.ps1" $linkToDubbingList $episodeDataId
 
-$listOfDubs = . "$PSScriptRoot/tool/GetEpisodes.exe" 'translations' $html 2> "$PSScriptRoot/temp/log.txt"
+$listOfDubs = . "$PSScriptRoot/tool/GetEpisodes.exe" 'translations' $dubbingListHtml 2> "$PSScriptRoot/temp/log.txt"
 if ($null -eq $listOfDubs) {
 	. "$PSScriptRoot/helpers/clean_console.ps1" 1
 	Write-Host 'No dubs available for selected episode'
@@ -47,7 +47,7 @@ if ($null -ne $players) {
 		return 'Seen'
 	} else {
 		. "$PSScriptRoot/helpers/clean_console.ps1" 1
-		return . "$PSScriptRoot/select_dubbing.ps1" $link $episodeDataId
+		return . "$PSScriptRoot/select_dubbing.ps1" $linkToDubbingList $episodeDataId
 	}
 } else {
 	return $null

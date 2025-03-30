@@ -7,8 +7,8 @@ param(
 	[string]$cookie
 )
 
-$links = @( 'animego.me', 'animego.club', 'animego.org', 'animego.one' )
-$headers = @{
+$animegoLinks = @( 'animego.me', 'animego.club', 'animego.org', 'animego.one' )
+$tryRequestHeaders = @{
 	'x-requested-with' = 'XMLHttpRequest'
 	'Referer'        = $referer
 	'User-Agent'     = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
@@ -18,19 +18,19 @@ $headers = @{
 }
 
 if (-not [String]::IsNullOrEmpty($cookie)) {
-	$headers['Cookie'] = $cookie
+	$tryRequestHeaders['Cookie'] = $cookie
 }
 
-foreach ($postfixVariant in $links) {
+foreach ($postfixVariant in $animegoLinks) {
 	if ([String]::IsNullOrEmpty($referer)) {
-		$headers['Referer'] = "https://$postfixVariant/"
+		$tryRequestHeaders['Referer'] = "https://$postfixVariant/"
 	}
 
-	$link = [Uri]::new("https://$postfixVariant/$queryString")
+	$animegoPostfixVariantLink = [Uri]::new("https://$postfixVariant/$queryString")
 	try {
-		$response = Invoke-RestMethod -Uri $link -Method 'Get' -Headers $headers -TimeoutSec 2
+		$response = Invoke-RestMethod -Uri $animegoPostfixVariantLink -Method 'Get' -Headers $tryRequestHeaders -TimeoutSec 2
+		Set-Content "$PSScriptRoot/../temp/try_request_log.html" $response
 		if ($response.status -eq 'success') {
-			Set-Content "$PSScriptRoot/../temp/try_request_log.html" $response.content
 			return $response.content
 			break
 		}
