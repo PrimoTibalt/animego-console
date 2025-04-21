@@ -1,17 +1,10 @@
-Add-Type -AssemblyName 'System.Net'
-
-[Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$PSDefaultParameterValues['*:Encoding'] = 'utf8'
-chcp 65001 # UTF-8 code page
-Clear-Host
-
 $text = ''
-$dict = [ordered]@{}
+$foundAnimeMapToHrefMap = [ordered]@{}
 while ($true) {
 	if ($text.Length -ge 4) {
-		if ($dict.Count -gt 0) {
-			[Console]::SetCursorPosition(0, $dict.Count)
-			$toDeleteLines = $dict.Count - 1
+		if ($foundAnimeMapToHrefMap.Count -gt 0) {
+			[Console]::SetCursorPosition(0, $foundAnimeMapToHrefMap.Count)
+			$toDeleteLines = $foundAnimeMapToHrefMap.Count - 1
 			. "$PSScriptRoot/helpers/clean_console.ps1" $toDeleteLines
 		}
 
@@ -20,15 +13,15 @@ while ($true) {
 		$content = [System.Net.WebUtility]::HtmlDecode($html)
 		$data = . "$PSScriptRoot/tool/GetEpisodes.exe" 'search' $content 2> "$PSScriptRoot/temp/log.txt"
 		if (-not [string]::IsNullOrWhiteSpace($data)) {
-			$dict = [ordered]@{}
+			$foundAnimeMapToHrefMap = [ordered]@{}
 			foreach ($pair in $data.Split(';')) {
 				$pair = $pair.Split('||')
-				$dict[$pair[0]] = $pair[1]
+				$foundAnimeMapToHrefMap[$pair[0]] = $pair[1]
 			}
 		}
 
 		[Console]::SetCursorPosition(0, 1);
-		foreach($pair in $dict.GetEnumerator()) {
+		foreach($pair in $foundAnimeMapToHrefMap.GetEnumerator()) {
 			Write-Host $pair.Key
 		}
 	}
@@ -40,12 +33,12 @@ while ($true) {
 	[Console]::Write("$text")
 	$key = [Console]::ReadKey($true)
 
-	if ($key.Key -eq [System.ConsoleKey]::Enter -and $dict.Count -gt 0) {
+	if ($key.Key -eq [System.ConsoleKey]::Enter -and $foundAnimeMapToHrefMap.Count -gt 0) {
 		[Console]::SetCursorPosition(0, 1)
-		$name = . "$PSScriptRoot/helpers/select.ps1" $dict $null $false $true
+		$name = . "$PSScriptRoot/helpers/select.ps1" $foundAnimeMapToHrefMap $null $false $true
 		$animeLinkFull = . "$PSScriptRoot/helpers/watched_management/synchronize_to_state.ps1" $name
 		if ([string]::IsNullOrEmpty($animeLinkFull)) {
-			$animeLink = $dict.$name
+			$animeLink = $foundAnimeMapToHrefMap.$name
 			$animeLinkFull = "https://animego.one$animeLink"
 			. "$PSScriptRoot/helpers/state_management/create_state.ps1" $name $animeLinkFull
 		}
