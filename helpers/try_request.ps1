@@ -7,7 +7,7 @@ param(
 	[string]$cookie
 )
 
-$animegoLinks = @( 'animego.me', 'animego.club', 'animego.org', 'animego.one' )
+$animegoLinks = @( 'animego.me', 'animego.club', 'animego.org', 'animego.one', 'animego.la' )
 $tryRequestHeaders = @{
 	'x-requested-with' = 'XMLHttpRequest'
 	'Referer'        = $referer
