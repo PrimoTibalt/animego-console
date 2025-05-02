@@ -7,7 +7,13 @@ param(
 
 $dubbingListHtml = . "$PSScriptRoot/open_player_link.ps1" $linkToDubbingList $episodeDataId
 
-$listOfDubs = . "$PSScriptRoot/tool/GetEpisodes.exe" 'translations' $dubbingListHtml 2> "$PSScriptRoot/temp/log.txt"
+try {
+	$listOfDubs = . "$PSScriptRoot/tool/GetEpisodes.exe" 'translations' $dubbingListHtml 2> "$PSScriptRoot/temp/log.txt"
+} catch {
+	Set-Content "$PSScriptRoot/tool/translations.html" $dubbingListHtml
+	$listOfDubs = . "$PSScriptRoot/tool/GetEpisodes.exe" 'translations' 2> "$PSScriptRoot/temp/log.txt"
+}
+
 if ($null -eq $listOfDubs) {
 	. "$PSScriptRoot/helpers/clean_console.ps1" 1
 	Write-Host 'No dubs available for selected episode'
