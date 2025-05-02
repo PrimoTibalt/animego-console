@@ -5,7 +5,7 @@ param(
 	$dataId
 )
 
-$originalLink -match "-(?<number>\d\d\d\d)" > $null
+$originalLink -match "-(?<number>\d{2,4})" > $null
 $number = $Matches.number
 $cookie = $null
 if ($null -ne $dataId) {
