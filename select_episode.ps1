@@ -11,6 +11,8 @@ if ($null -eq $dictOfEpisodes) {
 	$fetchEpisodesResultHtml = . "$PSScriptRoot/open_player_link.ps1" $fetchEpisodesLink
 	if ($null -eq $fetchEpisodesResultHtml) {
 		Write-Host 'Unable to fetch player link, site is down or antiddos kicked in'
+		$Host.UI.RawUI.ReadKey()
+
 		return
 	}
 
@@ -23,12 +25,14 @@ if ($null -eq $dictOfEpisodes) {
 
 	if ([string]::IsNullOrEmpty($episodes)) {
 		Write-Host 'No episodes found'
+		$Host.UI.RawUI.ReadKey()
 		return
 	}
 
 	$episodes = $episodes.Split(';')
 	if ($episodes.Count -lt 0) {
 		Write-Error 'No episodes found'
+		$Host.UI.RawUI.ReadKey()
 		return $null
 	}
 
