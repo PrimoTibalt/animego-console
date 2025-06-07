@@ -7,4 +7,4 @@ $agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, l
 $referrer = "https://aniboom.one/"
 $vlc = "C:\Program Files\VideoLAN\VLC\vlc.exe"
 
-& $vlc --http-referrer $referrer --http-user-agent $agent $blob
+& $vlc --http-referrer $referrer --http-user-agent $agent $blob --fullscreen
