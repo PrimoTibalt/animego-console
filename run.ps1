@@ -11,6 +11,6 @@ $menuDict = [ordered]@{
 }
 
 while ($true) {
-	$menuScriptPath = . "$PSScriptRoot/helpers/select.ps1" $menuDict '' $false
+	$menuScriptPath = . "$PSScriptRoot/helpers/select.ps1" $menuDict '' $false $false 'Choose from watched' $false
 	. $menuScriptPath
 }
