@@ -4,6 +4,7 @@ chcp 65001 # UTF-8 code page
 Clear-Host
 
 Add-Type -AssemblyName 'System.Net'
+Add-Type -Path "$PSScriptRoot/helpers/html_parsers/HtmlAgilityPack.dll"
 
 $menuDict = [ordered]@{
 	'Search'="$PSScriptRoot/search_anime.ps1";

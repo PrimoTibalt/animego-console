@@ -7,32 +7,12 @@ param(
 
 $dubbingListHtml = . "$PSScriptRoot/open_player_link.ps1" $linkToDubbingList $episodeDataId
 
-try {
-	$listOfDubs = . "$PSScriptRoot/tool/GetEpisodes.exe" 'translations' $dubbingListHtml 2> "$PSScriptRoot/temp/log.txt"
-} catch {
-	Set-Content "$PSScriptRoot/tool/translations.html" $dubbingListHtml
-	$listOfDubs = . "$PSScriptRoot/tool/GetEpisodes.exe" 'translations' 2> "$PSScriptRoot/temp/log.txt"
-}
-
-if ($null -eq $listOfDubs) {
+$dictOfDubs = . "$PSScriptRoot/helpers/html_parsers/retrieve_translations.ps1" $dubbingListHtml
+if ($dictOfDubs.Count -eq 0) {
 	. "$PSScriptRoot/helpers/clean_console.ps1" 1
 	Write-Host 'No dubs available for selected episode'
-	Write-Host ""	# Prevent text above from being deleted
+	Write-Host '' # Prevent text above from being deleted
 	return
-}
-
-$dictOfDubs = [ordered]@{}
-foreach ($dub in $listOfDubs.Split(';')) {
-	$namePlayersPair = $dub.Split(',')
-	$subDict = [ordered]@{}
-	foreach ($playerLinkPair in $namePlayersPair[1].Split('||')) {
-		if (-not [string]::IsNullOrEmpty($playerLinkPair)) {
-			$splitted = $playerLinkPair.Split(':')
-			$subDict[$splitted[0]] = 'https:' + $splitted[1]
-		}
-	}
-
-	$dictOfDubs[$namePlayersPair[0]] = $subDict
 }
 
 $preselectedDub = . "$PSScriptRoot/helpers/state_management/get_dub.ps1"

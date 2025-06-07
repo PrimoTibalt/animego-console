@@ -11,15 +11,7 @@ while ($true) {
 		$queryString = "search/all?type=small&q=$text&_=1741983593650"
 		$html = . "$PSScriptRoot/helpers/try_request.ps1" $queryString 
 		$content = [System.Net.WebUtility]::HtmlDecode($html)
-		$data = . "$PSScriptRoot/tool/GetEpisodes.exe" 'search' $content 2> "$PSScriptRoot/temp/log.txt"
-		if (-not [string]::IsNullOrWhiteSpace($data)) {
-			$foundAnimeMapToHrefMap = [ordered]@{}
-			foreach ($pair in $data.Split(';')) {
-				$pair = $pair.Split('||')
-				$foundAnimeMapToHrefMap[$pair[0]] = $pair[1]
-			}
-		}
-
+		$foundAnimeMapToHrefMap = . "$PSScriptRoot/helpers/html_parsers/search_anime.ps1" $content
 		[Console]::SetCursorPosition(0, 1);
 		foreach($pair in $foundAnimeMapToHrefMap.GetEnumerator()) {
 			Write-Host $pair.Key
