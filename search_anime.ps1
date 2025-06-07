@@ -56,5 +56,9 @@ while ($true) {
 		continue
 	}
 
+	if ($key.KeyChar -eq '`') {
+		break
+	}
+
 	$text = $text + $key.KeyChar
 }
