@@ -8,7 +8,9 @@ param(
 	[Parameter(Position = 3)]
 	[bool]$returnKey = $false,
 	[Parameter(Position = 4)]
-	$preselectedValue
+	$preselectedValue,
+	[Parameter(Position = 5)]
+	$showMessageOnSelect
 )
 
 $currentLineOfMultipage = $Host.UI.RawUI.CursorPosition.Y + 1
@@ -67,7 +69,7 @@ while ($true) {
 		$multipageDict = $dictForMultipage
 	}
 
-	$selectMultipageResult = . "$PSScriptRoot/base_select.ps1" $multipageDict $message $withFallback $returnKey $preselectedValue
+	$selectMultipageResult = . "$PSScriptRoot/base_select.ps1" $multipageDict $message $withFallback $returnKey $preselectedValue $showMessageOnSelect
 	if ($multipageInitiated) {
 		. "$PSScriptRoot/../clean_console.ps1" 2
 		if ($selectMultipageResult -eq 'next' -or $selectMultipageResult -eq '>-Next') {

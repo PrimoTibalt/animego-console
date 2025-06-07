@@ -8,7 +8,9 @@ param(
 	[Parameter(Position = 3)]
 	[bool]$returnKey = $false,
 	[Parameter(Position = 4)]
-	$preselectedValue
+	$preselectedValue,
+	[Parameter(Position = 5)]
+	[bool]$showMessageOnSelect
 )
 
 $fallbackSign = '__'
@@ -89,7 +91,7 @@ $index = 0
 foreach ($pair in $dict.GetEnumerator()) {
 	if ($index -eq $selected) {
 		$key = $pair.Key
-		if ($key -ne $fallbackSign -and $key -ne '<-Prev' -and $key -ne '>-Next') {
+		if ($showMessageOnSelect -and ($key -ne $fallbackSign -and $key -ne '<-Prev' -and $key -ne '>-Next')) {
 			Write-Host "You chose $key"
 		}
 
