@@ -10,7 +10,7 @@ param(
 	[Parameter(Position = 4)]
 	$preselectedValue,
 	[Parameter(Position = 5)]
-	$showMessageOnSelect
+	[bool]$showMessageOnSelect
 )
 
 $currentLineOfMultipage = $Host.UI.RawUI.CursorPosition.Y + 1
