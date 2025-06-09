@@ -3,12 +3,12 @@ param(
 	[string] $fullState
 )
 
-$path = "$PSScriptRoot/../../temp/global.json"
+$globalStatePath = "$PSScriptRoot/../../temp/global.json"
 
 $stateJson = ConvertFrom-Json $fullState
 $name = $stateJson.name
-if (Test-Path $path) {
-	$current = Get-Content $path | ConvertFrom-Json
+if (Test-Path $globalStatePath) {
+	$current = Get-Content $globalStatePath | ConvertFrom-Json
 	if ($null -ne $current.$name) {
 		$value = ConvertFrom-Json $current.$name
 		# Tight coupling to state management changes
@@ -27,6 +27,7 @@ if (Test-Path $path) {
 	$current.$name = $fullState
 
 	$newValue = ConvertTo-Json $current
+	New-Item -Path $globalStatePath -Force > $null
 }
 
-Set-Content $path $newValue
+Set-Content $globalStatePath $newValue

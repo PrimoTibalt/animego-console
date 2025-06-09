@@ -3,8 +3,6 @@ param(
 	$htmlStringToSearchAnime
 )
 
-Set-Content -Path "$PSScriptRoot/search.html" -Value $htmlStringToSearchAnime
-
 $htmlDocumentToSearchAnime = [HtmlAgilityPack.HtmlDocument]::new()
 $htmlDocumentToSearchAnime.LoadHtml($htmlStringToSearchAnime)
 $animeNodes = $htmlDocumentToSearchAnime.DocumentNode.SelectNodes("//div[@class='result-search-anime']/div/div/h5/a")

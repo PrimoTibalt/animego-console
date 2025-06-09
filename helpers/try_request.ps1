@@ -29,7 +29,6 @@ foreach ($postfixVariant in $animegoLinks) {
 	$animegoPostfixVariantLink = [Uri]::new("https://$postfixVariant/$queryString")
 	try {
 		$response = Invoke-RestMethod -Uri $animegoPostfixVariantLink -Method 'Get' -Headers $tryRequestHeaders -TimeoutSec 2
-		Set-Content "$PSScriptRoot/../temp/try_request_log.html" $response
 		if ($response.status -eq 'success') {
 			return $response.content
 			break

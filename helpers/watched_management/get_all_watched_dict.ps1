@@ -1,7 +1,11 @@
-$allWatchedAnime = Get-Content "$PSScriptRoot/../../temp/global.json" | ConvertFrom-Json;
+$globalStatePath = "$PSScriptRoot/../../temp/global.json" 
+$allWatchedAnimeDict = [ordered]@{}
+if (-not (Test-Path $globalStatePath)) {
+	return $allWatchedAnimeDict
+}
+$allWatchedAnime = Get-Content | ConvertFrom-Json;
 
 $animeProperties = Get-Member -InputObject $allWatchedAnime -MemberType NoteProperty
-$allWatchedAnimeDict = [ordered]@{}
 foreach($animeProperty in $animeProperties) {
 	$animeName = $animeProperty.Name
 	$allWatchedAnimeDict[$animeName] = $allWatchedAnime.$animeName
