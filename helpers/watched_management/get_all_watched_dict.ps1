@@ -3,7 +3,7 @@ $allWatchedAnimeDict = [ordered]@{}
 if (-not (Test-Path $globalStatePath)) {
 	return $allWatchedAnimeDict
 }
-$allWatchedAnime = Get-Content | ConvertFrom-Json;
+$allWatchedAnime = Get-Content -Path $globalStatePath | ConvertFrom-Json
 
 $animeProperties = Get-Member -InputObject $allWatchedAnime -MemberType NoteProperty
 foreach($animeProperty in $animeProperties) {

@@ -4,7 +4,9 @@ param(
 	[Parameter(Position = 1)]
 	[string]$referer,
 	[Parameter(Position = 2)]
-	[string]$cookie
+	[string]$cookie,
+	[Parameter(Position = 3)]
+	[System.Threading.CancellationToken]$requestCancellationToken
 )
 
 $animegoLinks = @( 'animego.me', 'animego.club', 'animego.org', 'animego.one', 'animego.la' )
@@ -22,6 +24,10 @@ if (-not [String]::IsNullOrEmpty($cookie)) {
 }
 
 foreach ($postfixVariant in $animegoLinks) {
+	if ($null -ne $requestCancellationToken -and $requestCancellationToken.IsCancellationRequested) {
+		break
+	}
+
 	if ([String]::IsNullOrEmpty($referer)) {
 		$tryRequestHeaders['Referer'] = "https://$postfixVariant/"
 	}
