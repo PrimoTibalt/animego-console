@@ -13,7 +13,7 @@ $watchEpisodeHeaders = @{
 $playerHtml = Invoke-RestMethod -Uri $episodePlayerDataLink -Method 'Get' -Headers $watchEpisodeHeaders -TimeoutSec 5
 
 $playerHtml = [System.Net.WebUtility]::HtmlDecode($playerHtml)
-$playerHtml -match "data-parameters=`"{(?<parameters>[^ ]*)}`"" > $null
+$playerHtml -match 'data-parameters="{(?<parameters>[^ ]*)}"' > $null
 $result = '{' + $Matches.parameters + '}'
 $playerJson = ConvertFrom-Json -InputObject $result
 switch -regex ($playerJson.hls)

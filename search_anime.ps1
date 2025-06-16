@@ -1,5 +1,9 @@
 $searchInputText = ''
-$foundAnimeMapToHrefMap = [ordered]@{}
+$searchAnimeSelectParameters = New-Object SelectParameters
+$searchAnimeSelectParameters.dictForSelect = [ordered]@{}
+$searchAnimeSelectParameters.withFallback = $false
+$searchAnimeSelectParameters.returnKey = $true
+$searchAnimeSelectParameters.showMessageOnSelect = $false
 
 while ($true) {
 	if (-not [Console]::KeyAvailable) {
@@ -15,33 +19,35 @@ while ($true) {
 
 	$key = [Console]::ReadKey()
 
-	if ($key.Key -eq [System.ConsoleKey]::Enter -and $foundAnimeMapToHrefMap.Count -gt 0) {
+	if ($key.Key -eq [System.ConsoleKey]::Enter -and $searchAnimeSelectParameters.dictForSelect.Count -gt 0) {
 		[Console]::SetCursorPosition(0, 1)
-		$foundAnimeMapToHrefMap['...'] = $null
-		$name = . "$PSScriptRoot/helpers/select.ps1" $foundAnimeMapToHrefMap $null $false $true $null $false
-		if ($name -eq '...') {
-			$foundAnimeMapToHrefMap.Remove('...')
+		$searchAnimeSelectParameters.dictForSelect['...'] = $null
+		$animeNameFromSearch = . "$PSScriptRoot/helpers/select.ps1" $searchAnimeSelectParameters
+		if ($animeNameFromSearch -eq '...') {
+			$searchAnimeSelectParameters.dictForSelect.Remove('...')
 			[Console]::SetCursorPosition(0, 1);
-			foreach ($pair in $foundAnimeMapToHrefMap.GetEnumerator()) {
+			foreach ($pair in $searchAnimeSelectParameters.dictForSelect.GetEnumerator()) {
 				Write-Host $pair.Key
 			}
 
 			[Console]::SetCursorPosition($searchInputText.Length, 0)
 			continue
 		}
-		$animeLinkFull = . "$PSScriptRoot/helpers/watched_management/synchronize_to_state.ps1" $name
+
+		$animeLinkFull = . "$PSScriptRoot/helpers/watched_management/synchronize_to_state.ps1" $animeNameFromSearch
 		if ([string]::IsNullOrEmpty($animeLinkFull)) {
-			$animeLink = $foundAnimeMapToHrefMap.$name
+			$animeLink = $searchAnimeSelectParameters.dictForSelect.$animeNameFromSearch
 			$animeLinkFull = "https://animego.one$animeLink"
-			. "$PSScriptRoot/helpers/state_management/create_state.ps1" $name $animeLinkFull
+			. "$PSScriptRoot/helpers/state_management/create_state.ps1" $animeNameFromSearch $animeLinkFull
 		}
 
 		. "$PSScriptRoot/select_episode.ps1" $animeLinkFull
 		Clear-Host
-		continue
+		[Console]::Write($searchInputText)
 	}
 
 	if ($key.KeyChar -eq '`') {
+		Clear-Host
 		break
 	}
 
@@ -57,6 +63,6 @@ while ($true) {
 
 
 	if ($searchInputText.Length -ge 4) {
-		$foundAnimeMapToHrefMap = . "$PSScriptRoot/helpers/request_anime_by_name.ps1" $searchInputText $foundAnimeMapToHrefMap $cts.Token
+		$searchAnimeSelectParameters.dictForSelect = . "$PSScriptRoot/helpers/request_anime_by_name.ps1" $searchInputText $searchAnimeSelectParameters.dictForSelect $cts.Token
 	}
 }

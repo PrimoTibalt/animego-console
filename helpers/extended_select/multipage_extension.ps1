@@ -1,23 +1,13 @@
 param(
 	[Parameter(Position = 0, Mandatory)]
-	[System.Collections.Specialized.OrderedDictionary]$dictForMultipage,
-	[Parameter(Position = 1)]
-	[string]$message,
-	[Parameter(Position = 2)]
-	[bool]$withFallback = $true,
-	[Parameter(Position = 3)]
-	[bool]$returnKey = $false,
-	[Parameter(Position = 4)]
-	$preselectedValue,
-	[Parameter(Position = 5)]
-	[bool]$showMessageOnSelect
+	[SelectParameters]$multipageSelectParams
 )
 
 $currentLineOfMultipage = $Host.UI.RawUI.CursorPosition.Y + 1
 $maxLineOfMultipage = $Host.UI.RawUI.BufferSize.Height
 
-$estimatedSinglePageSize = $dictForMultipage.Count
-if ($withFallback) {
+$estimatedSinglePageSize = $multipageSelectParams.dictForSelect.Count
+if ($multipageSelectParams.withFallback) {
 	$estimatedSinglePageSize = $estimatedSinglePageSize + 1
 }
 
@@ -28,20 +18,20 @@ if ($currentLineOfMultipage + $estimatedSinglePageSize -gt $maxLineOfMultipage) 
 
 $currentPageOfMultipageSelect = 1;
 $leftHeightForSelect = $maxLineOfMultipage - $currentLineOfMultipage - 3
-if ($withFallback) {
+if ($multipageSelectParams.withFallback) {
 	$leftHeightForSelect--
 }
 
-if (-not [string]::IsNullOrEmpty($message)) {
+if (-not [string]::IsNullOrEmpty($multipageSelectParams.message)) {
 	$leftHeightForSelect--
 }
 
-$totalCountOfPages = [System.Math]::Ceiling([double]$dictForMultipage.Count / $leftHeightForSelect)
+$totalCountOfPages = [System.Math]::Ceiling([double]$multipageSelectParams.dictForSelect.Count / $leftHeightForSelect)
 
-if ($multipageInitiated -and $null -ne $preselectedValue) {
+if ($multipageInitiated -and $null -ne $multipageSelectParams.preselectedValue) {
 	$multipagePreselectIndex = 0
-	foreach ($pair in $dictForMultipage.GetEnumerator()) {
-		if ($pair.Key -eq $preselectedValue) {
+	foreach ($pair in $multipageSelectParams.dictForSelect.GetEnumerator()) {
+		if ($pair.Key -eq $multipageSelectParams.preselectedValue) {
 			$currentPageOfMultipageSelect = [Math]::Floor($multipagePreselectIndex / $leftHeightForSelect) + 1
 			break
 		}
@@ -54,7 +44,7 @@ while ($true) {
 	if ($multipageInitiated) {
 		Write-Host "($currentPageOfMultipageSelect/$totalCountOfPages)"
 		$multipagePairIndex = 0
-		foreach ($pair in $dictForMultipage.GetEnumerator()) {
+		foreach ($pair in $multipageSelectParams.dictForSelect.GetEnumerator()) {
 			if ([Math]::Floor($multipagePairIndex / $leftHeightForSelect) -eq $currentPageOfMultipageSelect - 1) {
 				$multipageDict[$pair.Key] = $pair.Value;
 			}
@@ -66,10 +56,18 @@ while ($true) {
 		$multipageDict['>-Next']='next';
 	}
 	else {
-		$multipageDict = $dictForMultipage
+		$multipageDict = $multipageSelectParams.dictForSelect
 	}
 
-	$selectMultipageResult = . "$PSScriptRoot/base_select.ps1" $multipageDict $message $withFallback $returnKey $preselectedValue $showMessageOnSelect
+	$updatedSelectParams = New-Object SelectParameters
+	$updatedSelectParams.dictForSelect = $multipageDict
+	$updatedSelectParams.message = $multipageSelectParams.message
+	$updatedSelectParams.withFallback = $multipageSelectParams.withFallback
+	$updatedSelectParams.returnKey = $multipageSelectParams.returnKey
+	$updatedSelectParams.preselectedValue = $multipageSelectParams.preselectedValue
+	$updatedSelectParams.showMessageOnSelect = $multipageSelectParams.showMessageOnSelect
+
+	$selectMultipageResult = . "$PSScriptRoot/base_select.ps1" $updatedSelectParams
 	if ($multipageInitiated) {
 		. "$PSScriptRoot/../clean_console.ps1" 2
 		if ($selectMultipageResult -eq 'next' -or $selectMultipageResult -eq '>-Next') {

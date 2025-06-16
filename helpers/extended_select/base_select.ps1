@@ -1,16 +1,6 @@
 param(
 	[Parameter(Position = 0, Mandatory)]
-	[System.Collections.Specialized.OrderedDictionary]$dict,
-	[Parameter(Position = 1)]
-	[string]$message,
-	[Parameter(Position = 2)]
-	[bool]$withFallback = $true,
-	[Parameter(Position = 3)]
-	[bool]$returnKey = $false,
-	[Parameter(Position = 4)]
-	$preselectedValue,
-	[Parameter(Position = 5)]
-	[bool]$showMessageOnSelect
+	[SelectParameters]$selectParameters
 )
 
 $fallbackSign = '__'
@@ -20,27 +10,27 @@ $inputs = @{
 	'74' = 1;
 	'40' = 1
 }
-if ($withFallback) {
-	$dict = [ordered]@{ $fallbackSign = $null } + $dict
+if ($selectParameters.withFallback -and (-1 -eq $selectParameters.dictForSelect.Keys.IndexOf($fallbackSign))) {
+	$selectParameters.dictForSelect = [ordered]@{ $fallbackSign = $null } + $selectParameters.dictForSelect
 }
 
 $selected = 0
-if (-not [string]::IsNullOrWhiteSpace($preselectedValue)) {
-	$selected = $dict.Keys.IndexOf($preselectedValue)
+if (-not [string]::IsNullOrWhiteSpace($selectParameters.preselectedValue)) {
+	$selected = $selectParameters.dictForSelect.Keys.IndexOf($selectParameters.preselectedValue)
 	if ($selected -lt 0) {
 		$selected = 0
 	}
 }
 
-$count = $dict.Keys.Count
+$count = $selectParameters.dictForSelect.Keys.Count
 
-if (-not [string]::IsNullOrEmpty($message)) {
-	Write-Host $message
+if (-not [string]::IsNullOrEmpty($selectParameters.message)) {
+	Write-Host $selectParameters.message
 }
 
 while ($true) {
 	$index = 0
-	foreach ($pair in $dict.GetEnumerator()) {
+	foreach ($pair in $selectParameters.dictForSelect.GetEnumerator()) {
 		if ($index -eq $selected) {
 			Write-Host -ForegroundColor Green $pair.Key
 		} else {
@@ -61,12 +51,12 @@ while ($true) {
 		break
 	}
 	
-	if ($pressedKey.VirtualKeyCode -eq '72' -and $null -ne $dict['<-Prev']) {
-		return $dict['<-Prev']
+	if ($pressedKey.VirtualKeyCode -eq '72' -and $null -ne $selectParameters.dictForSelect['<-Prev']) {
+		return $selectParameters.dictForSelect['<-Prev']
 	}
 
-	if ($pressedKey.VirtualKeyCode -eq '76' -and $null -ne $dict['>-Next']) {
-		return $dict['>-Next']
+	if ($pressedKey.VirtualKeyCode -eq '76' -and $null -ne $selectParameters.dictForSelect['>-Next']) {
+		return $selectParameters.dictForSelect['>-Next']
 	}
 
 	$keyPressed = $pressedKey.VirtualKeyCode.ToString()
@@ -83,23 +73,23 @@ while ($true) {
 	}
 }
 
-if (-not [string]::IsNullOrEmpty($message)) {
+if (-not [string]::IsNullOrEmpty($selectParameters.message)) {
 	. "$PSScriptRoot/../clean_console.ps1" 1
 }
 
 $index = 0
-foreach ($pair in $dict.GetEnumerator()) {
+foreach ($pair in $selectParameters.dictForSelect.GetEnumerator()) {
 	if ($index -eq $selected) {
 		$key = $pair.Key
-		if ($showMessageOnSelect -and ($key -ne $fallbackSign -and $key -ne '<-Prev' -and $key -ne '>-Next')) {
+		if ($selectParameters.showMessageOnSelect -and ($key -ne $fallbackSign -and $key -ne '<-Prev' -and $key -ne '>-Next')) {
 			Write-Host "You chose $key"
 		}
 
-		if ($returnKey) {
+		if ($selectParameters.returnKey) {
 			return $key
 		}
 
-		return $dict.$key
+		return $selectParameters.dictForSelect.$key
 	}
 
 	$index++

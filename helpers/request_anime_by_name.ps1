@@ -1,13 +1,13 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
-	[string]$searchInputText,
+	[string]$inputTextFromSearchScript,
 	[Parameter(Mandatory, Position = 1)]
 	$foundAnimeToHrefMap,
 	[Parameter(Mandatory, Position = 2)]
 	[System.Threading.CancellationToken]$token
 	)
 
-$queryString = "search/all?type=small&q=$searchInputText&_=1741983593650"
+$queryString = "search/all?type=small&q=$inputTextFromSearchScript&_=1741983593650"
 $html = . "$PSScriptRoot/try_request.ps1" $queryString $null $null $token
 if ($token.IsCancellationRequested) {
 	return $foundAnimeToHrefMap
@@ -28,5 +28,5 @@ foreach ($pair in $newAnimeToHrefMap.GetEnumerator()) {
 	Write-Host $pair.Key
 }
 
-[Console]::SetCursorPosition($searchInputText.Length, 0)
+[Console]::SetCursorPosition($inputTextFromSearchScript.Length, 0)
 return $newAnimeToHrefMap

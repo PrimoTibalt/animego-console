@@ -15,12 +15,22 @@ if ($dictOfDubs.Count -eq 0) {
 	return
 }
 
-$preselectedDub = . "$PSScriptRoot/helpers/state_management/get_dub.ps1"
-$selectedDub = . "$PSScriptRoot/helpers/select.ps1" $dictOfDubs 'Select dubber:' $true $true $preselectedDub
+$selectDubSelectParameters = New-Object SelectParameters
+$selectDubSelectParameters.dictForSelect = $dictOfDubs
+$selectDubSelectParameters.message = 'Select dubber:'
+$selectDubSelectParameters.returnKey = $true
+$selectDubSelectParameters.preselectedValue = . "$PSScriptRoot/helpers/state_management/get_dub.ps1"
+
+$selectedDub = . "$PSScriptRoot/helpers/select.ps1" $selectDubSelectParameters
 $players = $dictOfDubs.$selectedDub
 if ($null -ne $players) {
 	. "$PSScriptRoot/helpers/state_management/set_last_dubbing.ps1" $selectedDub
-	$episodeLink = . "$PSScriptRoot/helpers/select.ps1" $players 'Select player:'
+
+	$selectPlayerSelectParameters = New-Object SelectParameters
+	$selectPlayerSelectParameters.dictForSelect = $players
+	$selectPlayerSelectParameters.message = 'Select player:'
+
+	$episodeLink = . "$PSScriptRoot/helpers/select.ps1" $selectPlayerSelectParameters
 	if (-not [string]::IsNullOrEmpty($episodeLink)) {
 		Write-Host "You are watching $episodeLink"
 		Write-Host 'Click any button to return '

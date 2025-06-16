@@ -24,7 +24,14 @@ if ($null -eq $dictOfEpisodes) {
 }
 
 $preselectedEpisode = . "$PSScriptRoot/helpers/state_management/get_episode.ps1"
-$episodeNumber = . "$PSScriptRoot/helpers/select.ps1" $dictOfEpisodes 'Select episode:' $true $true $preselectedEpisode
+
+$selectEpisodeSelectParameters = New-Object SelectParameters
+$selectEpisodeSelectParameters.dictForSelect = $dictOfEpisodes
+$selectEpisodeSelectParameters.returnKey = $true
+$selectEpisodeSelectParameters.message = 'Select episode:'
+$selectEpisodeSelectParameters.preselectedValue = $preselectedEpisode
+
+$episodeNumber = . "$PSScriptRoot/helpers/select.ps1" $selectEpisodeSelectParameters
 $dataId = $dictOfEpisodes.$episodeNumber
 if ($null -ne $dataId) {
 	. "$PSScriptRoot/helpers/state_management/add_episode.ps1" $episodeNumber
