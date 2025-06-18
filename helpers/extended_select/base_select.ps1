@@ -31,10 +31,15 @@ if (-not [string]::IsNullOrEmpty($selectParameters.message)) {
 while ($true) {
 	$index = 0
 	foreach ($pair in $selectParameters.dictForSelect.GetEnumerator()) {
+		$pairKey = $pair.Key
+		if ($null -ne $selectParameters.actionOnEachKey) {
+			$pairKey = $selectParameters.actionOnEachKey.Invoke($pairKey)
+		}
+
 		if ($index -eq $selected) {
-			Write-Host -ForegroundColor Green $pair.Key
+			Write-Host -ForegroundColor Green $pairKey
 		} else {
-			Write-Host $pair.Key
+			Write-Host $pairKey
 		}
 
 		$index++
@@ -49,6 +54,28 @@ while ($true) {
 
 	if ($pressedKey.VirtualKeyCode -eq '13') {
 		break
+	}
+
+	if ($pressedKey.VirtualKeyCode -eq '70' -and $null -ne $selectParameters.actionOnF) {
+		$actionOnFIndex = 0
+		foreach ($pair in $selectParameters.dictForSelect.GetEnumerator()) {
+			if ($actionOnFIndex -eq $selected) {
+				$selectParameters.actionOnF.Invoke($pair.Key, $pair.Value)
+			}
+
+			$actionOnFIndex++
+		}
+	}
+
+	if ($pressedKey.VirtualKeyCode -eq '82' -and $null -ne $selectParameters.actionOnR) {
+		$actionOnRIndex = 0
+		foreach ($pair in $selectParameters.dictForSelect.GetEnumerator()) {
+			if ($actionOnRIndex -eq $selected) {
+				$selectParameters.actionOnR.Invoke($pair.Key)
+			}
+
+			$actionOnRIndex++
+		}
 	}
 	
 	if ($pressedKey.VirtualKeyCode -eq '72' -and $null -ne $selectParameters.dictForSelect['<-Prev']) {

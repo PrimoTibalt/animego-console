@@ -66,6 +66,9 @@ while ($true) {
 	$updatedSelectParams.returnKey = $multipageSelectParams.returnKey
 	$updatedSelectParams.preselectedValue = $multipageSelectParams.preselectedValue
 	$updatedSelectParams.showMessageOnSelect = $multipageSelectParams.showMessageOnSelect
+	$updatedSelectParams.actionOnF = $multipageSelectParams.actionOnF
+	$updatedSelectParams.actionOnEachKey = $multipageSelectParams.actionOnEachKey
+	$updatedSelectParams.actionOnR = $multipageSelectParams.actionOnR
 
 	$selectMultipageResult = . "$PSScriptRoot/base_select.ps1" $updatedSelectParams
 	if ($multipageInitiated) {

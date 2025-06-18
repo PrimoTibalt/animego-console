@@ -24,8 +24,14 @@ if ($token.IsCancellationRequested) {
 }
 
 [Console]::SetCursorPosition(0, 1);
+$favoriteAnimes = . "$PSScriptRoot/favorite_management/get_favorites.ps1"
 foreach ($pair in $newAnimeToHrefMap.GetEnumerator()) {
-	Write-Host $pair.Key
+	$newAnimeName = $pair.Key
+	if ($null -ne $favoriteAnimes[$newAnimeName]) {
+		$newAnimeName = '★ ' + $newAnimeName
+	}
+
+	Write-Host $newAnimeName
 }
 
 [Console]::SetCursorPosition($inputTextFromSearchScript.Length, 0)

@@ -4,6 +4,29 @@ $searchAnimeSelectParameters.dictForSelect = [ordered]@{}
 $searchAnimeSelectParameters.withFallback = $false
 $searchAnimeSelectParameters.returnKey = $true
 $searchAnimeSelectParameters.showMessageOnSelect = $false
+$searchAnimeSelectParameters.actionOnF = [Action[[string],[string]]]{
+	param([string]$addToFavoriteAnimeName, [string]$addToFavoriteAnimeHref)
+
+	$addToFavoriteAnimeHref = "https://animego.one$addToFavoriteAnimeHref"
+	. "$PSScriptRoot/helpers/favorite_management/add_new_favorite.ps1" $addToFavoriteAnimeName $addToFavoriteAnimeHref
+}
+$searchAnimeSelectParameters.actionOnEachKey = [Func[[string],[string]]]{
+	param([string]$dictionaryKey)
+
+	$favoriteAnimes = . "$PSScriptRoot/helpers/favorite_management/get_favorites.ps1"
+
+	if ($null -ne $favoriteAnimes[$dictionaryKey]) {
+		return '★ ' + $dictionaryKey
+	}
+	else {
+		return $dictionaryKey
+	}
+}
+$searchAnimeSelectParameters.actionOnR = [Action[[string]]]{
+	param([string]$removeFromFavoriteAnimeName)
+
+	. "$PSScriptRoot/helpers/favorite_management/remove_favorite.ps1" $removeFromFavoriteAnimeName
+}
 
 while ($true) {
 	if (-not [Console]::KeyAvailable) {
@@ -25,9 +48,15 @@ while ($true) {
 		$animeNameFromSearch = . "$PSScriptRoot/helpers/select.ps1" $searchAnimeSelectParameters
 		if ($animeNameFromSearch -eq '...') {
 			$searchAnimeSelectParameters.dictForSelect.Remove('...')
+			$favoriteAnimes = . "$PSScriptRoot/helpers/favorite_management/get_favorites.ps1"
 			[Console]::SetCursorPosition(0, 1);
 			foreach ($pair in $searchAnimeSelectParameters.dictForSelect.GetEnumerator()) {
-				Write-Host $pair.Key
+				$animePairKey = $pair.Key
+				if ($null -ne $favoriteAnimes[$animePairKey]) {
+					$animePairKey = '★ ' + $animePairKey
+				}
+
+				Write-Host $animePairKey
 			}
 
 			[Console]::SetCursorPosition($searchInputText.Length, 0)
