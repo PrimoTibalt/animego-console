@@ -1,3 +1,5 @@
+$fallbackSign = '__'
+
 $favoriteAnimes = . "$PSScriptRoot/helpers/favorite_management/get_favorites.ps1"
 $favoriteListSelectParameters = New-Object SelectParameters
 $favoriteListSelectParameters.dictForSelect = $favoriteAnimes
@@ -22,6 +24,9 @@ while ($true) {
 	}
 
 	$animeHrefOfSynchronization = . "$PSScriptRoot/helpers/watched_management/synchronize_to_state.ps1" $favoriteAnimeName
+	if ([string]::IsNullOrEmpty($animeHrefOfSynchronization)) {
+		$animeHrefOfSynchronization = $favoriteAnimes[$favoriteAnimeName]
+	}
 	. "$PSScriptRoot/select_episode.ps1" $animeHrefOfSynchronization
 	Clear-Host
 }
