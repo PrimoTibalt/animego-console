@@ -13,7 +13,9 @@ if (Test-Path $globalStatePath) {
 		$value = ConvertFrom-Json $current.$name
 		# Tight coupling to state management changes
 		# Room for improvement by reading properties info
-		$value.episode = $stateJson.episode
+		try {
+			$value.episode = $stateJson.episode
+		} catch {} # Movies don't have episodes
 		$value.dub = $stateJson.dub
 		$value.href = $stateJson.href
 		$current.$name = ConvertTo-Json $value

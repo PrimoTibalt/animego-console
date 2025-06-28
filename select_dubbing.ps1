@@ -42,6 +42,8 @@ if ($null -ne $players) {
 		Write-Host 'Click any button to return '
 		if ($episodeLink.Contains('kodik')) {
 			. "$PSScriptRoot/watch_kodik.ps1" $episodeLink
+		} elseif ($episodeLink.Contains('sibnet')) {
+			. "$PSScriptRoot/watch_sibnet.ps1" $episodeLink
 		} else {
 			. "$PSScriptRoot/watch_aniboom.ps1" $episodeLink
 		}

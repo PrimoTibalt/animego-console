@@ -1,10 +1,15 @@
 param(
 	[Parameter(Position = 0, Mandatory)]
-	[string] $blob
+	[string] $blob,
+	[Parameter(Position = 1)]
+	[string] $referrer
 )
 
 $agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0' 
-$referrer = 'https://aniboom.one/'
+if ([string]::IsNullOrEmpty($referrer)) {
+	$referrer = 'https://aniboom.one/'
+}
+
 $vlc = 'C:\Program Files\VideoLAN\VLC\vlc.exe'
 
 if (-not (Test-Path $vlc)) {
