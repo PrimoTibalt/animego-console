@@ -17,10 +17,19 @@ if ($null -eq $dictOfEpisodes) {
 
 	$dictOfEpisodes = . "$PSScriptRoot/helpers/html_parsers/retrieve_episodes.ps1" $fetchEpisodesResultHtml
 	if ($dictOfEpisodes.Count -eq 0) {
-		Write-Host 'No episodes found'
-		$Host.UI.RawUI.ReadKey()
-		return
+		$filmDubbingMap = . "$PSScriptRoot/helpers/html_parsers/retrieve_translations.ps1" $fetchEpisodesResultHtml
+		if ($filmDubbingMap.Count -lt 1) {
+			Write-Host 'No episodes found'
+			$Host.UI.RawUI.ReadKey()
+			return
+		}
 	}
+}
+
+if ($dictOfEpisodes.Count -lt 1) { # Anime is a movie with single episode
+	. "$PSScriptRoot/select_dubbing.ps1" $fetchEpisodesLink $null $fetchEpisodesResultHtml
+	. "$PSScriptRoot/helpers/clean_console.ps1" 1
+	return
 }
 
 $preselectedEpisode = . "$PSScriptRoot/helpers/state_management/get_episode.ps1"

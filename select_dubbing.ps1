@@ -1,11 +1,17 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
 	[string]$linkToDubbingList,
-	[Parameter(Mandatory, Position = 1)]
-	$episodeDataId
+	[Parameter(Position = 1)]
+	$episodeDataId,
+	[Parameter(Position = 2)]
+	$dubbingListFromMovieHtml
 )
 
-$dubbingListHtml = . "$PSScriptRoot/open_player_link.ps1" $linkToDubbingList $episodeDataId
+if ($null -eq $episodeDataId) {
+	$dubbingListHtml = $dubbingListFromMovieHtml
+} else {
+	$dubbingListHtml = . "$PSScriptRoot/open_player_link.ps1" $linkToDubbingList $episodeDataId
+}
 
 $dictOfDubs = . "$PSScriptRoot/helpers/html_parsers/retrieve_translations.ps1" $dubbingListHtml
 if ($dictOfDubs.Count -eq 0) {
@@ -48,7 +54,7 @@ if ($null -ne $players) {
 		return 'Seen'
 	} else {
 		. "$PSScriptRoot/helpers/clean_console.ps1" 1
-		return . "$PSScriptRoot/select_dubbing.ps1" $linkToDubbingList $episodeDataId
+		return . "$PSScriptRoot/select_dubbing.ps1" $linkToDubbingList $episodeDataId $dubbingListFromMovieHtml
 	}
 } else {
 	return $null

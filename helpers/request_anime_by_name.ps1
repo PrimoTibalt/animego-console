@@ -8,16 +8,17 @@ param(
 	)
 
 $queryString = "search/all?type=small&q=$inputTextFromSearchScript&_=1741983593650"
-$html = . "$PSScriptRoot/try_request.ps1" $queryString $null $null $token
+$searchResultHtml = . "$PSScriptRoot/try_request.ps1" $queryString $null $null $token
+
 if ($token.IsCancellationRequested) {
 	return $foundAnimeToHrefMap
 }
 
 [Console]::SetCursorPosition(0, $foundAnimeToHrefMap.Count + 2)
 . "$PSScriptRoot/clean_console.ps1" ($foundAnimeToHrefMap.Count + 1)
-$content = [System.Net.WebUtility]::HtmlDecode($html)
+$searchResultContent = [System.Net.WebUtility]::HtmlDecode($searchResultHtml)
 
-$newAnimeToHrefMap = . "$PSScriptRoot/html_parsers/search_anime.ps1" $content
+$newAnimeToHrefMap = . "$PSScriptRoot/html_parsers/search_anime.ps1" $searchResultContent
 
 if ($token.IsCancellationRequested) {
 	return $foundAnimeToHrefMap
