@@ -2,12 +2,12 @@ param(
 	[Parameter(Position = 0, Mandatory)]
 	[string] $blob,
 	[Parameter(Position = 1)]
-	[string] $referrer
+	[string] $referer
 )
 
 $agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0' 
-if ([string]::IsNullOrEmpty($referrer)) {
-	$referrer = 'https://aniboom.one/'
+if ([string]::IsNullOrEmpty($referer)) {
+	$referer = 'https://aniboom.one/'
 }
 
 $vlc = 'C:\Program Files\VideoLAN\VLC\vlc.exe'
@@ -18,4 +18,5 @@ if (-not (Test-Path $vlc)) {
 	. "$PSScriptRoot/clean_console.ps1" 10 # Not very reliable ain't it
 }
 
-& $vlc --http-referrer $referrer --http-user-agent $agent $blob --fullscreen
+#. "$PSScriptRoot/download_management/download_from_m3u8.ps1" $blob $agent $referer
+& $vlc --http-referrer $referer --http-user-agent $agent $blob --fullscreen
