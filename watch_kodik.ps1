@@ -35,15 +35,9 @@ $kodikParametersMap = @{}
 $kodikParametersJsonObject.psobject.properties | ForEach-Object { $kodikParametersMap[$_.Name] = $_.Value }
 $formUrlEncoded = ($kodikParametersMap.GetEnumerator() | ForEach-Object {"$($_.Key)=$($_.Value)"}) -join '&'
 $kodikLinksResponse = Invoke-RestMethod -Uri 'https://kodik.info/ftor' -ContentType 'application/x-www-form-urlencoded' -Method POST -Body $formUrlEncoded
-$qualityKodikMap = [ordered]@{}
-$kodikLinksResponse.links.psobject.properties | ForEach-Object { $qualityKodikMap[$_.Name] = $_.Value.src }
-
-$watchKodikQualitySelectParameters = New-Object SelectParameters
-$watchKodikQualitySelectParameters.dictForSelect = $qualityKodikMap
-$watchKodikQualitySelectParameters.message = 'Select quality:'
-$watchKodikQualitySelectParameters.preselectedValue = '720'
-
-$encodedKodikLink = . "$PSScriptRoot/helpers/select.ps1" $watchKodikQualitySelectParameters
+$kodikQualitiesOptions = New-Object System.Collections.SortedList
+$kodikLinksResponse.links.psobject.properties | ForEach-Object { $kodikQualitiesOptions.Add([int]::Parse($_.Name), $_.Value.src) }
+$encodedKodikLink = $kodikQualitiesOptions.GetByIndex($kodikQualitiesOptions.Count - 1)
 
 # the funcitons below are just a rewritten by copilot version of decoding from python's library anime_parsers_ru
 function Convert-Char {
