@@ -1,6 +1,8 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
-	[string]$kodikEpisodePlayerUrl
+	[string]$kodikEpisodePlayerUrl,
+	[Parameter(Position = 1)]
+	[bool]$wantToDownload
 )
 
 $kodikEpisodePlayerHeaders = @{
@@ -95,4 +97,4 @@ function Convert-String {
 
 $decodedKodikLink = Convert-String $encodedKodikLink
 $kodikVideoLink = "https:$decodedKodikLink"
-. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $kodikVideoLink
+. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $kodikVideoLink $null $wantToDownload

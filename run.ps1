@@ -22,6 +22,7 @@ $menuDict = [ordered]@{
 	'Search'="$PSScriptRoot/search_anime.ps1";
 	'Choose from watched'="$PSScriptRoot/select_anime_from_watch_list.ps1";
 	'Choose from favorites'="$PSScriptRoot/select_anime_from_favorite_list.ps1";
+	'Choose from downloaded'="$PSScriptRoot/select_anime_from_downloaded_folder.ps1";
 }
 
 $runScriptSelectParameters = New-Object SelectParameters

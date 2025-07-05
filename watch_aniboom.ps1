@@ -1,6 +1,8 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
-	[string]$episodePlayerDataLink
+	[string]$episodePlayerDataLink,
+	[Parameter(Position = 1)]
+	[bool]$wantToDownload
 )
 
 Add-Type -AssemblyName 'System.Net'
@@ -20,10 +22,10 @@ switch -regex ($playerJson.hls)
 {
 	'(?<link>https:[^ ]*m3u8)' {
 		$m3u8 = $Matches.link.Replace('\/', '/')
-		. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $m3u8
+		. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $m3u8 $null $wantToDownload
 	}
 	'(?<link>https:[^ ]*mpd)' {
 		$mpv = $Matches.link.Replace('\/', '/')
-		. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $mpv
+		. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $mpv $null $wantToDownload
 	}
 }

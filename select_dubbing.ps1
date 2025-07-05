@@ -35,6 +35,24 @@ if ($null -ne $players) {
 	$selectPlayerSelectParameters = New-Object SelectParameters
 	$selectPlayerSelectParameters.dictForSelect = $players
 	$selectPlayerSelectParameters.message = 'Select player:'
+	$selectPlayerSelectParameters.actionOnF = [Action[[string], [string]]]{
+		param(
+			[string]$key,
+			[string]$value
+		)
+
+		if ($null -ne $value) {
+			if ($value.Contains('kodik')) {
+				. "$PSScriptRoot/watch_kodik.ps1" $value $true
+			} elseif ($value.Contains('sibnet')) {
+				. "$PSScriptRoot/watch_sibnet.ps1" $value $true
+			} else {
+				. "$PSScriptRoot/watch_aniboom.ps1" $value $true
+			}
+
+			. "$PSScriptRoot/helpers/clean_console.ps1" 2
+		}
+	}
 
 	$episodeLink = . "$PSScriptRoot/helpers/select.ps1" $selectPlayerSelectParameters
 	if (-not [string]::IsNullOrEmpty($episodeLink)) {

@@ -2,7 +2,9 @@ param(
 	[Parameter(Position = 0, Mandatory)]
 	[string] $blob,
 	[Parameter(Position = 1)]
-	[string] $referer
+	[string] $referer,
+	[Parameter(Position = 2)]
+	[bool]$wantToDownload
 )
 
 $agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0' 
@@ -18,5 +20,8 @@ if (-not (Test-Path $vlc)) {
 	. "$PSScriptRoot/clean_console.ps1" 10 # Not very reliable ain't it
 }
 
-#. "$PSScriptRoot/download_management/download_from_m3u8.ps1" $blob $agent $referer
-& $vlc --http-referrer $referer --http-user-agent $agent $blob --fullscreen
+if ($wantToDownload) {
+	. "$PSScriptRoot/download_management/download_from_m3u8.ps1" $blob $agent $referer
+} else {
+	& $vlc --http-referrer $referer --http-user-agent $agent $blob --fullscreen
+}
