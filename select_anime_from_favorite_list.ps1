@@ -26,7 +26,9 @@ while ($true) {
 	$animeHrefOfSynchronization = . "$PSScriptRoot/helpers/watched_management/synchronize_to_state.ps1" $favoriteAnimeName
 	if ([string]::IsNullOrEmpty($animeHrefOfSynchronization)) {
 		$animeHrefOfSynchronization = $favoriteAnimes[$favoriteAnimeName]
+		. "$PSScriptRoot/helpers/state_management/create_state.ps1" $favoriteAnimeName $animeHrefOfSynchronization
 	}
+
 	. "$PSScriptRoot/select_episode.ps1" $animeHrefOfSynchronization
 	Clear-Host
 }
