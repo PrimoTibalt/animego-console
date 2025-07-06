@@ -9,7 +9,7 @@ $listOfReverseSubstitution = @{
 	'*@' = '|'
 }
 
-while ($true) {
+while ($true) { # Loop for anime names
 	#loop to choose anime from downloaded
 	$dictOfDownloadedAnimes = [ordered]@{}
 	Get-ChildItem "$PSScriptRoot/temp/animes" -Directory | ForEach-Object {
@@ -61,60 +61,76 @@ while ($true) {
 		. "$PSScriptRoot/helpers/state_management/create_state.ps1" $selectedAnimeName $hrefFromFile
 	}
 
-	$dictOfDownloadedDubs = [ordered]@{}
-	Get-ChildItem $selectedAnimeDirectory -Directory | ForEach-Object {
-		$dictOfDownloadedDubs[$_.Name] = $_.FullName
-	}
-
-	if ($dictOfDownloadedDubs.Count -eq 1) {
-		$selectedDubEnumerator = $dictOfDownloadedDubs.GetEnumerator()
-		$selectedDubEnumerator.MoveNext() *> $null
-		$selectedDubFolderName = $selectedDubEnumerator.Current.Key
-		$selectedDubFolder = $selectedDubEnumerator.Current.Value
-	}
-	else {
-		$animeDubFolderSelectParameters = New-Object SelectParameters
-		$animeDubFolderSelectParameters.dictForSelect = $dictOfDownloadedDubs
-		$animeDubFolderSelectParameters.showMessageOnSelect = $false
-		$animeDubFolderSelectParameters.returnKey = $true
-		$selectedDubFolderName = . "$PSScriptRoot/helpers/select.ps1" $animeDubFolderSelectParameters
-		$selectedDubFolder = $dictOfDownloadedDubs[$selectedDubFolderName]
-	}
-
+	$wantToBreakFromEpisodesSelection = $false
 	while ($true) {
-		$dictOfDownloadedEpisodes = [ordered]@{}
-		Get-ChildItem $selectedDubFolder | ForEach-Object {
-			$episodeNameWithoutExtension = [int]::Parse($_.Name.Replace('.mp4', [string]::Empty))
-			$dictOfDownloadedEpisodes.Add($episodeNameWithoutExtension, $_.FullName)
+		# Loop for dubbing
+		$dictOfDownloadedDubs = [ordered]@{}
+		Get-ChildItem $selectedAnimeDirectory -Directory | ForEach-Object {
+			$dictOfDownloadedDubs[$_.Name] = $_.FullName
 		}
 
-		$lastEpisode = . "$PSScriptRoot/helpers/state_management/get_episode.ps1"
-		$animeDownloadedEpisodeSelectPrameters = New-Object SelectParameters
-		$animeDownloadedEpisodeSelectPrameters.dictForSelect = $dictOfDownloadedEpisodes
-		$animeDownloadedEpisodeSelectPrameters.showMessageOnSelect = $false
-		$animeDownloadedEpisodeSelectPrameters.returnKey = $true
-		if ($null -ne $lastEpisode) {
-			$animeDownloadedEpisodeSelectPrameters.preselectedValue = [int]::Parse($lastEpisode)
-		}
-		$animeDownloadedEpisodeSelectPrameters.actionOnF = [Action[[string],[string]]]{
-			param(
-				[string]$nameOfAFile,
-				[string]$pathToAFile
-			)
+		if ($dictOfDownloadedDubs.Count -eq 1) {
+			if ($wantToBreakFromEpisodesSelection) {
+				break
+			}
 
-			. "$PSScriptRoot/helpers/upscaling_management/upscale_video.ps1" $pathToAFile
-		}
-		$selectedEpisodeNumber = . "$PSScriptRoot/helpers/select.ps1" $animeDownloadedEpisodeSelectPrameters
-		$selectedEpisodePath = $dictOfDownloadedEpisodes.$selectedEpisodeNumber
-
-		if ($selectedEpisodeNumber -eq '__') {
+			$selectedDubEnumerator = $dictOfDownloadedDubs.GetEnumerator()
+			$selectedDubEnumerator.MoveNext() *> $null
+			$selectedDubFolderName = $selectedDubEnumerator.Current.Key
+			$selectedDubFolder = $selectedDubEnumerator.Current.Value
+		} elseif ($dictOfDownloadedDubs.Count -gt 1) {
+			$animeDubFolderSelectParameters = New-Object SelectParameters
+			$animeDubFolderSelectParameters.dictForSelect = $dictOfDownloadedDubs
+			$animeDubFolderSelectParameters.showMessageOnSelect = $false
+			$animeDubFolderSelectParameters.returnKey = $true
+			$selectedDubFolderName = . "$PSScriptRoot/helpers/select.ps1" $animeDubFolderSelectParameters
+			if ($selectedDubFolderName -eq '__') {
+				break
+			}
+			$selectedDubFolder = $dictOfDownloadedDubs[$selectedDubFolderName]
+		} else {
+			Write-Host 'No dubs where found. Click any button to return...'
+			[Console]::ReadKey($true)
+			. "$PSScriptRoot/helpers/clean_console.ps1" 1
 			break
 		}
 
-		$vlc = 'C:\Program Files\VideoLAN\VLC\vlc.exe'
-		& $vlc $selectedEpisodePath --fullscreen
-		. "$PSScriptRoot/helpers/state_management/set_last_dubbing.ps1" $selectedDubFolderName
-		. "$PSScriptRoot/helpers/state_management/add_episode.ps1" $selectedEpisodeNumber
-		. "$PSScriptRoot/helpers/watched_management/synchronize_from_state.ps1"
+		while ($true) {
+			$dictOfDownloadedEpisodes = [ordered]@{}
+			Get-ChildItem $selectedDubFolder | ForEach-Object {
+				$episodeNameWithoutExtension = [int]::Parse($_.Name.Replace('.mp4', [string]::Empty))
+				$dictOfDownloadedEpisodes.Add($episodeNameWithoutExtension, $_.FullName)
+			}
+
+			$lastEpisode = . "$PSScriptRoot/helpers/state_management/get_episode.ps1"
+			$animeDownloadedEpisodeSelectPrameters = New-Object SelectParameters
+			$animeDownloadedEpisodeSelectPrameters.dictForSelect = $dictOfDownloadedEpisodes
+			$animeDownloadedEpisodeSelectPrameters.showMessageOnSelect = $false
+			$animeDownloadedEpisodeSelectPrameters.returnKey = $true
+			if ($null -ne $lastEpisode) {
+				$animeDownloadedEpisodeSelectPrameters.preselectedValue = [int]::Parse($lastEpisode)
+			}
+			$animeDownloadedEpisodeSelectPrameters.actionOnF = [Action[[string], [string]]] {
+				param(
+					[string]$nameOfAFile,
+					[string]$pathToAFile
+				)
+
+				. "$PSScriptRoot/helpers/upscaling_management/upscale_video.ps1" $pathToAFile
+			}
+			$selectedEpisodeNumber = . "$PSScriptRoot/helpers/select.ps1" $animeDownloadedEpisodeSelectPrameters
+			$selectedEpisodePath = $dictOfDownloadedEpisodes.$selectedEpisodeNumber
+
+			if ($selectedEpisodeNumber -eq '__') {
+				$wantToBreakFromEpisodesSelection = $true
+				break
+			}
+
+			$vlc = 'C:\Program Files\VideoLAN\VLC\vlc.exe'
+			& $vlc $selectedEpisodePath --fullscreen
+			. "$PSScriptRoot/helpers/state_management/set_last_dubbing.ps1" $selectedDubFolderName
+			. "$PSScriptRoot/helpers/state_management/add_episode.ps1" $selectedEpisodeNumber
+			. "$PSScriptRoot/helpers/watched_management/synchronize_from_state.ps1"
+		}
 	}
 }
