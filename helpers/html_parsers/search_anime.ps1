@@ -7,7 +7,7 @@ $htmlDocumentToSearchAnime = [HtmlAgilityPack.HtmlDocument]::new()
 $htmlDocumentToSearchAnime.LoadHtml($htmlStringToSearchAnime)
 $animeNodes = $htmlDocumentToSearchAnime.DocumentNode.SelectNodes("//div[@class='result-search-anime']/div/div/h5/a")
 if ($null -eq $animeNodes) {
-	$animeNodes = [HtmlAgilityPack.HtmlNodeCollection]::new()
+	return [ordered]@{}
 }
 
 $searchAnimeResultMap = [ordered]@{}
