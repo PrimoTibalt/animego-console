@@ -25,12 +25,29 @@ $menuDict = [ordered]@{
 	'Choose from downloaded'="$PSScriptRoot/select_anime_from_downloaded_folder.ps1";
 }
 
+$userCredsFilePath = "$PSScriptRoot/temp/creds.txt"
+$removeCredsScriptFilePath =  "remove_file"
+$removeCurrentCredentialsKey = 'Remove current login info'
+
 $runScriptSelectParameters = New-Object SelectParameters
 $runScriptSelectParameters.dictForSelect = $menuDict
 $runScriptSelectParameters.withFallback = $false
 $runScriptSelectParameters.preselectedValue = 'Choose from favorites'
 $runScriptSelectParameters.showMessageOnSelect = $false
 while ($true) {
+	if (-not $runScriptSelectParameters.dictForSelect.Contains($removeCurrentCredentialsKey)) {
+		$userCreds = . "$PSScriptRoot/helpers/login_management/get_credentials.ps1" $userCredsFilePath
+		if ($null -ne $userCreds) {
+			$runScriptSelectParameters.dictForSelect.Add($removeCurrentCredentialsKey, $removeCredsScriptFilePath)
+		}
+	}
+
 	$menuScriptPath = . "$PSScriptRoot/helpers/select.ps1" $runScriptSelectParameters
-	. $menuScriptPath
+
+	if ($menuScriptPath -eq $removeCredsScriptFilePath) {
+		Remove-Item -Path $userCredsFilePath > $null
+		$runScriptSelectParameters.dictForSelect.Remove($removeCurrentCredentialsKey)
+	} else {
+		. $menuScriptPath
+	}
 }

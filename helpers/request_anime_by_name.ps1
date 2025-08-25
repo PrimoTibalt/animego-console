@@ -3,12 +3,15 @@ param(
 	[string]$inputTextFromSearchScript,
 	[Parameter(Mandatory, Position = 1)]
 	$foundAnimeToHrefMap,
-	[Parameter(Mandatory, Position = 2)]
+	[Parameter(Position = 2)]
+	[string]$rememberMeToken,
+	[Parameter(Position = 3)]
 	[System.Threading.CancellationToken]$token
-	)
+)
 
 $queryString = "search/all?type=small&q=$inputTextFromSearchScript&_=1741983593650"
-$searchResultHtml = . "$PSScriptRoot/try_request.ps1" $queryString $null $null $token
+$rememberMeCookie = "REMEMBERME=$rememberMeToken"
+$searchResultHtml = . "$PSScriptRoot/try_request.ps1" $queryString $null $rememberMeCookie $token
 
 if ($token.IsCancellationRequested) {
 	return $foundAnimeToHrefMap

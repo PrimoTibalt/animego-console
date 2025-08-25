@@ -28,7 +28,16 @@ $searchAnimeSelectParameters.actionOnR = [Action[[string]]]{
 	. "$PSScriptRoot/helpers/favorite_management/remove_favorite.ps1" $removeFromFavoriteAnimeName
 }
 
-while ($true) {
+$pathToCredentialsFile = "$PSScriptRoot/temp/creds.txt"
+$userCreds = . "$PSScriptRoot/helpers/login_management/login.ps1" $pathToCredentialsFile
+if ($null -ne $userCreds) {
+	$rememberMeTokenData = . "$PSScriptRoot/helpers/login_management/get_rememberme_token.ps1" $userCreds.UsernameOrEmail $userCreds.UserPassword $pathToCredentialsFile
+	if ($null -ne $rememberMeTokenData) {
+		$rememberMeToken = $rememberMeTokenData.RememberMeToken
+	}
+}
+
+while ($true) { # Reading keys from console in a loop
 	if (-not [Console]::KeyAvailable) {
 		[System.Threading.Thread]::Sleep(50)
 		continue
@@ -92,6 +101,6 @@ while ($true) {
 
 
 	if ($searchInputText.Length -ge 4) {
-		$searchAnimeSelectParameters.dictForSelect = . "$PSScriptRoot/helpers/request_anime_by_name.ps1" $searchInputText $searchAnimeSelectParameters.dictForSelect $cts.Token
+		$searchAnimeSelectParameters.dictForSelect = . "$PSScriptRoot/helpers/request_anime_by_name.ps1" $searchInputText $searchAnimeSelectParameters.dictForSelect $rememberMeToken $cts.Token
 	}
 }
