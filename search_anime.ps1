@@ -30,8 +30,9 @@ $searchAnimeSelectParameters.actionOnR = [Action[[string]]]{
 
 $pathToCredentialsFile = "$PSScriptRoot/temp/creds.txt"
 $userCreds = . "$PSScriptRoot/helpers/login_management/login.ps1" $pathToCredentialsFile
+$pathToRememberMeToken = "$PSScriptRoot/temp/rememberme.txt"
 if ($null -ne $userCreds) {
-	$rememberMeTokenData = . "$PSScriptRoot/helpers/login_management/get_rememberme_token.ps1" $userCreds.UsernameOrEmail $userCreds.UserPassword $pathToCredentialsFile
+	$rememberMeTokenData = . "$PSScriptRoot/helpers/login_management/get_rememberme_token.ps1" $userCreds.UsernameOrEmail $userCreds.UserPassword $pathToRememberMeToken
 	if ($null -ne $rememberMeTokenData) {
 		$rememberMeToken = $rememberMeTokenData.RememberMeToken
 	}

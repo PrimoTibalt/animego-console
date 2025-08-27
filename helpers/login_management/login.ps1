@@ -3,7 +3,10 @@ param (
   [string]$pathToSaveCredentials
 )
 
-$pathToSaveCredentials =  "$PSScriptRoot/../../temp/creds.txt"
+if ([string]::IsNullOrEmpty($pathToSaveCredentials)) {
+  $pathToSaveCredentials =  "$PSScriptRoot/../../temp/creds.txt"
+}
+
 $credsFromFile = . "$PSScriptRoot/get_credentials.ps1" $pathToSaveCredentials
 if ($credsFromFile.UsernameOrEmail -eq 'false' -and $credsFromFile.UserPassword -eq 'false') {
   return $null
@@ -16,7 +19,7 @@ if ($null -eq $credsFromFile) {
   $usernameOrEmailFromConsole = [Console]::ReadLine().Trim()
   if ([string]::IsNullOrEmpty($usernameOrEmailFromConsole)) {
     . "$PSScriptRoot/../clean_console.ps1" 4
-    Set-Content -Path $pathToSaveCredentials -Value "false;false" -Force > $null
+  . "$PSScriptRoot/store_credentials.ps1" 'false' 'false' $pathToSaveCredentials
     return $null
   }
 
@@ -26,6 +29,8 @@ if ($null -eq $credsFromFile) {
     UsernameOrEmail = $usernameOrEmailFromConsole
     UserPassword = $userPasswordFromConsole
   }
+
+  . "$PSScriptRoot/store_credentials.ps1" $credsFromFile.UsernameOrEmail $credsFromFile.UserPassword $pathToSaveCredentials
 
   . "$PSScriptRoot/../clean_console.ps1" 6
 }
