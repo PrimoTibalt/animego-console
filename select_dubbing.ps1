@@ -46,6 +46,8 @@ if ($null -ne $players) {
 				. "$PSScriptRoot/watch_kodik.ps1" $value $true
 			} elseif ($value.Contains('sibnet')) {
 				. "$PSScriptRoot/watch_sibnet.ps1" $value $true
+			} elseif ($value.Contains('cdn-iframe')) {
+				. "$PSScriptRoot/watch_cvn.ps1" $value $true
 			} else {
 				. "$PSScriptRoot/watch_aniboom.ps1" $value $true
 			}
@@ -62,6 +64,8 @@ if ($null -ne $players) {
 			. "$PSScriptRoot/watch_kodik.ps1" $episodeLink
 		} elseif ($episodeLink.Contains('sibnet')) {
 			. "$PSScriptRoot/watch_sibnet.ps1" $episodeLink
+		} elseif ($episodeLink.Contains('cdn-iframe')) {
+			. "$PSScriptRoot/watch_cvn.ps1" $episodeLink
 		} else {
 			. "$PSScriptRoot/watch_aniboom.ps1" $episodeLink
 		}

@@ -3,8 +3,6 @@ param(
   [string]$loginPageHtml
 )
 
-New-Item -Path "$PSScriptRoot/../../temp/login.html" -Value $loginPageHtml -Force *> $null
-
 if ([string]::IsNullOrEmpty($loginPageHtml)) {
   return $null
 }
