@@ -59,23 +59,29 @@ if ($null -ne $players) {
 	$episodeLink = . "$PSScriptRoot/helpers/select.ps1" $selectPlayerSelectParameters
 	if (-not [string]::IsNullOrEmpty($episodeLink)) {
 		Write-Host "You are watching $episodeLink"
-		Write-Host 'Click any button to return '
 		if ($episodeLink.Contains('kodik')) {
 			. "$PSScriptRoot/watch_kodik.ps1" $episodeLink
 		} elseif ($episodeLink.Contains('sibnet')) {
 			. "$PSScriptRoot/watch_sibnet.ps1" $episodeLink
 		} elseif ($episodeLink.Contains('cdn-iframe')) {
-			. "$PSScriptRoot/watch_cvn.ps1" $episodeLink
+			# CVN is flacky, don't want to update state if it failed
+			$notWatched = . "$PSScriptRoot/watch_cvn.ps1" $episodeLink
 		} else {
 			. "$PSScriptRoot/watch_aniboom.ps1" $episodeLink
 		}
 
-		. "$PSScriptRoot/helpers/watched_management/synchronize_from_state.ps1"
-		[Console]::ReadKey($true)
-		# clean everything below anime name
-		# doesn't know if you went back and forth before starting watching
-		. "$PSScriptRoot/helpers/clean_console.ps1" 5
-		return 'Seen'
+		if ($true -ne $notWatched) {
+			Write-Host 'Click any button to return'
+			. "$PSScriptRoot/helpers/watched_management/synchronize_from_state.ps1"
+			[Console]::ReadKey($true)
+			# clean everything below anime name
+			# doesn't know if you went back and forth before starting watching
+			. "$PSScriptRoot/helpers/clean_console.ps1" 5
+			return 'Seen'
+		} else {
+			. "$PSScriptRoot/helpers/clean_console.ps1" 4
+			return $null
+		}
 	} else {
 		. "$PSScriptRoot/helpers/clean_console.ps1" 1
 		return . "$PSScriptRoot/select_dubbing.ps1" $linkToDubbingList $episodeDataId $dubbingListFromMovieHtml

@@ -22,13 +22,20 @@ $aggregatorOfAnime = $cvnPlayerEpisodeData.Aggregator
 $idOfAnimeOnCvn = $cvnPlayerEpisodeData.AnimeId
 $priorityDub = $cvnPlayerEpisodeData.PriorityDub
 
-$plapiResultJsonContent = Invoke-RestMethod -Uri "https://plapi.cdnvideohub.com/api/v1/player/sv/playlist?pub=$publisherIdOfAnime&aggr=$aggregatorOfAnime&id=$idOfAnimeOnCvn" -Headers $cvnPlayerEpisodeHeaders
-$dubItemDetails = $plapiResultJsonContent.items | Where-Object { ($_.voiceStudio -eq $priorityDub) -and ($_.episode -eq $episodeNumberFromUrl) }
-if ($null -eq $dubItemDetails) {
-	$dubItemDetails = $plapiResultJsonContent.items[0]
-	Write-Host 'Could not find preferred dub. Chose random. Click any button to continue'
+try {
+	$plapiResultJsonContent = Invoke-RestMethod -Uri "https://plapi.cdnvideohub.com/api/v1/player/sv/playlist?pub=$publisherIdOfAnime&aggr=$aggregatorOfAnime&id=$idOfAnimeOnCvn" -Headers $cvnPlayerEpisodeHeaders
+	$dubItemDetails = $plapiResultJsonContent.items | Where-Object { ($_.voiceStudio -eq $priorityDub) -and ($_.episode -eq $episodeNumberFromUrl) }
+	if ($null -eq $dubItemDetails) {
+		$dubItemDetails = $plapiResultJsonContent.items[0]
+		Write-Host 'Could not find preferred dub. Chose random. Click any button to continue'
+		Read-Host
+		. "$PSScriptRoot/helpers/clean_console.ps1" 2
+	}
+} catch {
+	Write-Host 'CVN is unavailable right now. Click any button to return'
 	Read-Host
 	. "$PSScriptRoot/helpers/clean_console.ps1" 2
+	return $true
 }
 
 $vkIdOfAnEpisode = $dubItemDetails.vkId
