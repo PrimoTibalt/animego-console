@@ -50,7 +50,7 @@ foreach ($videoQualityOption in $videoQualityOptions) {
 }
 
 if ($null -ne $videoQualityHighest) {
-	. "$PSScriptRoot/helpers/open_vlc_player.ps1" $videoQualityHighest 'https://player.cdnvideohub.com/' $wantToDownload
+	. "$PSScriptRoot/helpers/open_player.ps1" $videoQualityHighest 'https://player.cdnvideohub.com/' $wantToDownload $true
 } else {
 	Write-Host 'Could not find hls urls to video, nothing to play. Click any button to return'
 	Read-Host

@@ -30,12 +30,7 @@ $animeDubFromState = $animeState.dub
 $pathToSaveDownloadedFile = "$PSScriptRoot/../../temp/animes/$animeNameFromState/$animeDubFromState/$animeEpisodeFromState.mp4"
 $pathToSaveLinkToAnime = "$PSScriptRoot/../../temp/animes/$animeNameFromState/href.txt"
 
-try {
-	ffmpeg --help > $null 2> $null
-} catch {
-	winget install --id=Gyan.FFmpeg -e
-	$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-}
+. "$PSScriptRoot/download_ffmpeg.ps1"
 
 Write-Host 'Episode is being loaded'
 $tempVideoFilePath = "$PSScriptRoot/file.mp4"

@@ -15,4 +15,4 @@ $sibnetShellResponse = Invoke-RestMethod -Uri $sibnetShellEpisodeLink -Headers $
 $sibnetShellResponse -match "player\.src\(\[\{src\: \`"(?<sibnetUriPath>.*\.mp4)\`"" > $null
 $sibnetVideoUriPath = $Matches.sibnetUriPath
 
-. "$PSScriptRoot/helpers/open_vlc_player.ps1" "https://video.sibnet.ru$sibnetVideoUriPath" 'https://video.sibnet.ru/' $wantToDownload
+. "$PSScriptRoot/helpers/open_player.ps1" "https://video.sibnet.ru$sibnetVideoUriPath" 'https://video.sibnet.ru/' $wantToDownload

@@ -97,4 +97,4 @@ function Convert-String {
 
 $decodedKodikLink = Convert-String $encodedKodikLink
 $kodikVideoLink = "https:$decodedKodikLink"
-. "$PSScriptRoot/helpers/open_vlc_player.ps1" -blob $kodikVideoLink 'https://kodik.info/' $wantToDownload
+. "$PSScriptRoot/helpers/open_player.ps1" -blob $kodikVideoLink 'https://kodik.info/' $wantToDownload
