@@ -76,7 +76,7 @@ if ($null -ne $players) {
 			[Console]::ReadKey($true)
 			# clean everything below anime name
 			# doesn't know if you went back and forth before starting watching
-			. "$PSScriptRoot/helpers/clean_console.ps1" 5
+			& "$PSScriptRoot/helpers/clean_console.ps1" 5
 			return 'Seen'
 		} else {
 			. "$PSScriptRoot/helpers/clean_console.ps1" 4
