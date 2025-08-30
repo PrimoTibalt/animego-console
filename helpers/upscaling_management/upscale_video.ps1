@@ -12,7 +12,7 @@ if (-not (Test-Path $pathToVideoForUpscaling)) {
 $upscalerExePath = "$PSScriptRoot/../../temp/upscaler/video2x.exe"
 $upscalerLogPath = "$PSScriptRoot/../../temp/upscaler_log.txt"
 if (-not (Test-Path $upscalerExePath)) {
-	. "$PSScriptRoot/download_unzip_upscaler.ps1"
+	. "$PSScriptRoot/../download_management/download_unzip_upscaler.ps1"
 	Write-Host 'Click any button to continue'
 	[Console]::ReadKey($true) *> $null
 	. "$PSScriptRoot/../clean_console.ps1" 1
