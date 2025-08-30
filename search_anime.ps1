@@ -38,17 +38,57 @@ if ($null -ne $userCreds) {
 	}
 }
 
+$pathToSearchOutputLog = "$PSScriptRoot/temp/search_log.txt" 
+New-Item -Path $pathToSearchOutputLog -Value '' -Force *> $null
+$searchLogFileStream = New-Object System.IO.FileStream($pathToSearchOutputLog, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) 
+$searchLogStringReader = New-Object System.IO.StreamReader($searchLogFileStream)
+$linesOfAnimeCounter = 0
+$shouldCleanUp = $false
+$dictForSearchSelectNew = [ordered]@{}
 while ($true) { # Reading keys from console in a loop
 	if (-not [Console]::KeyAvailable) {
-		[System.Threading.Thread]::Sleep(50)
+		try {
+			$isNewProcess = $searchProcessId -ne $requestAnimeProcess.Id
+			if ($isNewProcess) {
+				$searchLogStringReader.BaseStream.Seek(0, [System.IO.SeekOrigin]::Begin) > $null
+				$shouldCleanUp = $true
+				$searchProcessId = $requestAnimeProcess.Id
+			}
+
+			$lineFromSearchResult = $searchLogStringReader.ReadLine()
+
+			if (-not [string]::IsNullOrWhiteSpace($lineFromSearchResult)) {
+				if ($shouldCleanUp) {
+					if ($dictForSearchSelectNew.Count -ne 0) {
+						[Console]::SetCursorPosition(0, $dictForSearchSelectNew.Count + 1)
+						& "$PSScriptRoot/helpers/clean_console.ps1" $dictForSearchSelectNew.Count
+						$linesOfAnimeCounter = 0
+						[Console]::SetCursorPosition($searchInputText.Length, 0)
+						$dictForSearchSelectNew = [ordered]@{}
+					}
+
+					$shouldCleanUp = $false
+				}
+
+				$linesOfAnimeCounter++
+				if ($linesOfAnimeCounter % 2 -eq 1) {
+					[Console]::SetCursorPosition(0, $dictForSearchSelectNew.Count + 1)
+					Write-Host $lineFromSearchResult
+					$lastAnimeName = $lineFromSearchResult
+					[Console]::SetCursorPosition($searchInputText.Length, 0)
+				} else {
+					$dictForSearchSelectNew.Add($lastAnimeName, $lineFromSearchResult)
+				}
+			} else {
+				$searchAnimeSelectParameters.dictForSelect = $dictForSearchSelectNew
+				[System.Threading.Thread]::Sleep(50)
+			}
+		} catch {
+			[System.Threading.Thread]::Sleep(50)
+		}
+
 		continue
 	}
-
-	if ($null -ne $cts) {
-		$cts.Cancel()
-	}
-
-	$cts = [System.Threading.CancellationTokenSource]::new()
 
 	$key = [Console]::ReadKey()
 
@@ -100,8 +140,14 @@ while ($true) { # Reading keys from console in a loop
 		$searchInputText = $searchInputText + $key.KeyChar
 	}
 
-
 	if ($searchInputText.Length -ge 4) {
-		$searchAnimeSelectParameters.dictForSelect = . "$PSScriptRoot/helpers/request_anime_by_name.ps1" $searchInputText $searchAnimeSelectParameters.dictForSelect $rememberMeToken $cts.Token
+		if (($null -ne $requestAnimeProcess) -and (-not $requestAnimeProcess.HasExit)) {
+			$requestAnimeProcess.Close()
+		}
+
+		$requestAnimeProcess = Start-Process -FilePath pwsh.exe -ArgumentList "-File `"`"$PSScriptRoot\helpers\request_anime_by_name.ps1`"`" -inputTextFromSearchScript `"$searchInputText`" -rememberMeToken `"$rememberMeToken`"" -RedirectStandardOutput $pathToSearchOutputLog -NoNewWindow -PassThru
 	}
 }
+
+$searchLogStringReader.Close()
+$searchLogFileStream.Close()

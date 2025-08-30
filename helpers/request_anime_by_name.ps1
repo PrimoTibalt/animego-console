@@ -1,33 +1,21 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
 	[string]$inputTextFromSearchScript,
-	[Parameter(Mandatory, Position = 1)]
-	$foundAnimeToHrefMap,
-	[Parameter(Position = 2)]
-	[string]$rememberMeToken,
-	[Parameter(Position = 3)]
-	[System.Threading.CancellationToken]$token
+	[Parameter(Position = 1)]
+	[string]$rememberMeToken
 )
 
+[Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$PSDefaultParameterValues['*:Encoding'] = 'utf8'
+Add-Type -Path "$PSScriptRoot/html_parsers/HtmlAgilityPack.dll"
 $queryString = "search/all?type=small&q=$inputTextFromSearchScript&_=1741983593650"
 $rememberMeCookie = "REMEMBERME=$rememberMeToken"
-$searchResultHtml = . "$PSScriptRoot/try_request.ps1" $queryString $null $rememberMeCookie $token
+$searchResultHtml = . "$PSScriptRoot/try_request.ps1" $queryString $null $rememberMeCookie
 
-if ($token.IsCancellationRequested) {
-	return $foundAnimeToHrefMap
-}
-
-[Console]::SetCursorPosition(0, $foundAnimeToHrefMap.Count + 2)
-. "$PSScriptRoot/clean_console.ps1" ($foundAnimeToHrefMap.Count + 1)
 $searchResultContent = [System.Net.WebUtility]::HtmlDecode($searchResultHtml)
 
 $newAnimeToHrefMap = . "$PSScriptRoot/html_parsers/search_anime.ps1" $searchResultContent
 
-if ($token.IsCancellationRequested) {
-	return $foundAnimeToHrefMap
-}
-
-[Console]::SetCursorPosition(0, 1);
 $favoriteAnimes = . "$PSScriptRoot/favorite_management/get_favorites.ps1"
 foreach ($pair in $newAnimeToHrefMap.GetEnumerator()) {
 	$newAnimeName = $pair.Key
@@ -36,7 +24,7 @@ foreach ($pair in $newAnimeToHrefMap.GetEnumerator()) {
 	}
 
 	Write-Host $newAnimeName
+	Write-Host $pair.Value
 }
 
-[Console]::SetCursorPosition($inputTextFromSearchScript.Length, 0)
-return $newAnimeToHrefMap
+Exit
