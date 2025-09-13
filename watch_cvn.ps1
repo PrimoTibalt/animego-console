@@ -5,7 +5,8 @@ param(
 	[bool]$wantToDownload
 )
 
-$episodeNumberFromUrl = [int]::Parse($cvnPlayerEpisodeLink[$cvnPlayerEpisodeLink.Length - 1])
+$svnPlayerEpisodeLinkSplit = $cvnPlayerEpisodeLink.Split('/')
+$episodeNumberFromUrl = [int]::Parse($svnPlayerEpisodeLinkSplit[$svnPlayerEpisodeLinkSplit.Length - 1])
 
 $cvnPlayerEpisodeHeaders = @{
 	'Referer'        = 'https://animego.me/'
