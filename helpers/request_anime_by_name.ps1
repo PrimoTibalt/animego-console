@@ -1,16 +1,14 @@
 param(
 	[Parameter(Mandatory, Position = 0)]
-	[string]$inputTextFromSearchScript,
-	[Parameter(Position = 1)]
-	[string]$rememberMeToken
+	[string]$inputTextFromSearchScript
 )
 
 [Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 Add-Type -Path "$PSScriptRoot/html_parsers/HtmlAgilityPack.dll"
-$queryString = "search/all?type=small&q=$inputTextFromSearchScript&_=1741983593650"
-$rememberMeCookie = "REMEMBERME=$rememberMeToken"
-$searchResultHtml = . "$PSScriptRoot/try_request.ps1" $queryString $null $rememberMeCookie
+$encodedSearchText = [Uri]::EscapeDataString($inputTextFromSearchScript)
+$queryString = "search/all?q=$encodedSearchText&navbar=true"
+$searchResultHtml = . "$PSScriptRoot/try_request.ps1" $queryString
 
 $searchResultContent = [System.Net.WebUtility]::HtmlDecode($searchResultHtml)
 

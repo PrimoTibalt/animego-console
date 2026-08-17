@@ -9,8 +9,9 @@ if (-not (Test-Path $pathToVideoForUpscaling)) {
 	. "$PSScriptRoot/../clean_console.ps1" 1
 }
 
-$upscalerExePath = "$PSScriptRoot/../../temp/upscaler/video2x.exe"
+$upscalerExePath = . "$PSScriptRoot/../platform_management/get_upscaler_path.ps1"
 $upscalerLogPath = "$PSScriptRoot/../../temp/upscaler_log.txt"
+$upscalerErrorLogPath = "$PSScriptRoot/../../temp/upscaler_error_log.txt"
 if (-not (Test-Path $upscalerExePath)) {
 	. "$PSScriptRoot/../download_management/download_unzip_upscaler.ps1"
 	Write-Host 'Click any button to continue'
@@ -28,20 +29,20 @@ if (Test-Path $upscalerLogPath) {
 }
 
 New-Item $upscalerLogPath -Force *> $null
-$upscalingProcess = Start-Process -FilePath $upscalerExePath -ArgumentList "-i `"$pathToVideoForUpscaling`" -o $upscalerInitialOutputPath -p realcugan --realcugan-threads 4096 -s 2 -d 0" -NoNewWindow -RedirectStandardOutput $upscalerLogPath -PassThru
+$upscalingProcess = Start-Process -FilePath $upscalerExePath -ArgumentList "-i `"$pathToVideoForUpscaling`" -o $upscalerInitialOutputPath -p realcugan --realcugan-threads 4096 -s 2 -d 0" -NoNewWindow -RedirectStandardOutput $upscalerLogPath -RedirectStandardError $upscalerErrorLogPath -PassThru
 
 $upscalerFileStream = New-Object System.IO.FileStream($upscalerLogPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
 $upscalerReader = New-Object System.IO.StreamReader($upscalerFileStream)
+$initialTerminalPositionY = $Host.UI.RawUI.CursorPosition.Y
 while (-not $upscalingProcess.HasExited) {
-	try {
-		$lineFromUpscalerToProcess = $upscalerReader.ReadLine()
-		if ((-not [string]::IsNullOrWhiteSpace($lineFromUpscalerToProcess)) -and $lineFromUpscalerToProcess.Contains('frame=')) {
-			Write-Host $lineFromUpscalerToProcess
-			[Console]::SetCursorPosition(0, $Host.UI.RawUI.CursorPosition.Y - 1)
-		}
-	} catch {
-		Write-Host 'You failed in reading logs'
-	}
+  try {
+    $lineFromUpscalerToProcess = $upscalerReader.ReadLine()
+    if ((-not [string]::IsNullOrWhiteSpace($lineFromUpscalerToProcess)) -and $lineFromUpscalerToProcess.Contains('frame=')) {
+      Write-Host $lineFromUpscalerToProcess
+      [Console]::SetCursorPosition(0, $initialTerminalPositionY)
+    }
+  } catch {
+  }
 }
 
 . "$PSScriptRoot/../clean_console.ps1" 1

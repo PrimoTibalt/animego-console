@@ -8,7 +8,7 @@ $favoriteListSelectParameters.returnKey = $true
 $favoriteListSelectParameters.actionOnF = [Action[[string],[string]]]{
 	param([string]$addToFavoriteAnimeName, [string]$addToFavoriteAnimeHref)
 
-	$addToFavoriteAnimeHref = "https://animego.one$addToFavoriteAnimeHref"
+	$addToFavoriteAnimeHref = "https://animego.me$addToFavoriteAnimeHref"
 	. "$PSScriptRoot/helpers/favorite_management/add_new_favorite.ps1" $addToFavoriteAnimeName $addToFavoriteAnimeHref
 }
 $favoriteListSelectParameters.actionOnR = [Action[[string]]]{

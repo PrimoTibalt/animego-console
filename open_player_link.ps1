@@ -6,11 +6,15 @@ param(
 )
 
 $originalLink = $originalLink.Trim()
-$originalLink -match "-(?<number>\d{2,4})$" > $null
-$number = $Matches.number
-$cookie = $null
+
 if ($null -ne $dataId) {
-	$cookie = "episode_video=$dataId"
+	return . "$PSScriptRoot/helpers/try_request.ps1" "player/videos/$dataId" $originalLink
 }
 
-return . "$PSScriptRoot/helpers/try_request.ps1" "anime/$number/player?_allow=true" $originalLink $cookie
+if ($originalLink -notmatch '-(?<number>\d+)$') {
+	return $null
+}
+
+$number = $Matches.number
+
+return . "$PSScriptRoot/helpers/try_request.ps1" "player/$number" $originalLink

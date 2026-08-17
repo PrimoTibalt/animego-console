@@ -4,45 +4,53 @@ param(
 	[Parameter(Position = 1)]
 	[string]$referer,
 	[Parameter(Position = 2)]
-	[string]$cookie,
-	[Parameter(Position = 3)]
 	[System.Threading.CancellationToken]$requestCancellationToken
 )
 
 $animegoLinks = @( 'animego.me', 'animego.club', 'animego.org', 'animego.one', 'animego.la' )
-$tryRequestHeaders = @{
-	'x-requested-with' = 'XMLHttpRequest'
-	'Referer'        = $referer
-	'User-Agent'     = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
-	'Accept'         = 'application/json, text/javascript, */*; q=0.01'
-	'Cache-Control'  = 'no-cache'
-	'Pragma'         = 'no-cache'
-}
 
-if (-not [String]::IsNullOrEmpty($cookie)) {
-	$tryRequestHeaders['Cookie'] = $cookie
-}
+for ($sessionAttempt = 0; $sessionAttempt -lt 2; $sessionAttempt++) {
+	$sessionCookies = . "$PSScriptRoot/login_management/get_session_cookies.ps1" ($sessionAttempt -gt 0)
 
-foreach ($postfixVariant in $animegoLinks) {
-	if ($null -ne $requestCancellationToken -and $requestCancellationToken.IsCancellationRequested) {
-		break
+	$tryRequestHeaders = @{
+		'x-requested-with' = 'XMLHttpRequest'
+		'Referer'        = $referer
+		'User-Agent'     = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
+		'Accept'         = 'application/json, text/javascript, */*; q=0.01'
+		'Cache-Control'  = 'no-cache'
+		'Pragma'         = 'no-cache'
 	}
 
-	if ([String]::IsNullOrEmpty($referer)) {
-		$tryRequestHeaders['Referer'] = "https://$postfixVariant/"
+	if (-not [String]::IsNullOrEmpty($sessionCookies)) {
+		$tryRequestHeaders['Cookie'] = $sessionCookies
 	}
 
-	$animegoPostfixVariantLink = [Uri]::new("https://$postfixVariant/$queryString")
-	try {
-		$response = Invoke-RestMethod -Uri $animegoPostfixVariantLink -Method 'Get' -Headers $tryRequestHeaders -TimeoutSec 2
-		if ($response.status -eq 'success') {
-			return $response.content
-			break
+	foreach ($postfixVariant in $animegoLinks) {
+		if ($null -ne $requestCancellationToken -and $requestCancellationToken.IsCancellationRequested) {
+			return $null
 		}
-	}
-	catch {
-		Set-Content "$PSScriptRoot/../temp/try_request_log.html" $response
-		continue
+
+		if ([String]::IsNullOrEmpty($referer)) {
+			$tryRequestHeaders['Referer'] = "https://$postfixVariant/"
+		}
+
+		$animegoPostfixVariantLink = [Uri]::new("https://$postfixVariant/$queryString")
+		try {
+			$response = Invoke-RestMethod -Uri $animegoPostfixVariantLink -Method 'Get' -Headers $tryRequestHeaders -TimeoutSec 15
+			if ($response.status -ne 'success') {
+				continue
+			}
+
+			if ($null -ne $response.data -and $null -ne $response.data.content) {
+				return $response.data.content
+			}
+
+			return $response.content
+		}
+		catch {
+			Set-Content "$PSScriptRoot/../temp/try_request_log.txt" "$animegoPostfixVariantLink`n$($_.Exception.Message)" -ErrorAction SilentlyContinue
+			continue
+		}
 	}
 }
 

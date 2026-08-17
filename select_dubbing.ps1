@@ -42,6 +42,7 @@ if ($null -ne $players) {
 		)
 
 		if ($null -ne $value) {
+			$lineBeforeDownload = $Host.UI.RawUI.CursorPosition.Y
 			if ($value.Contains('kodik')) {
 				. "$PSScriptRoot/watch_kodik.ps1" $value $true
 			} elseif ($value.Contains('sibnet')) {
@@ -52,12 +53,13 @@ if ($null -ne $players) {
 				. "$PSScriptRoot/watch_aniboom.ps1" $value $true
 			}
 
-			. "$PSScriptRoot/helpers/clean_console.ps1" 2
+			. "$PSScriptRoot/helpers/clean_console_to.ps1" $lineBeforeDownload
 		}
 	}
 
 	$episodeLink = . "$PSScriptRoot/helpers/select.ps1" $selectPlayerSelectParameters
 	if (-not [string]::IsNullOrEmpty($episodeLink)) {
+		$lineBeforePlayback = $Host.UI.RawUI.CursorPosition.Y
 		Write-Host "You are watching $episodeLink"
 		if ($episodeLink.Contains('kodik')) {
 			. "$PSScriptRoot/watch_kodik.ps1" $episodeLink
@@ -74,12 +76,11 @@ if ($null -ne $players) {
 			Write-Host 'Click any button to return'
 			. "$PSScriptRoot/helpers/watched_management/synchronize_from_state.ps1"
 			[Console]::ReadKey($true)
-			# clean everything below anime name
-			# doesn't know if you went back and forth before starting watching
-			& "$PSScriptRoot/helpers/clean_console.ps1" 5
+			# clean everything the player and this script printed below the anime name
+			& "$PSScriptRoot/helpers/clean_console_to.ps1" $lineBeforePlayback
 			return 'Seen'
 		} else {
-			. "$PSScriptRoot/helpers/clean_console.ps1" 4
+			. "$PSScriptRoot/helpers/clean_console_to.ps1" $lineBeforePlayback
 			return $null
 		}
 	} else {

@@ -40,7 +40,7 @@ if (Test-Path $tempVideoFilePath) {
 
 ffmpeg -user_agent $userAgent -headers "Referer: $referer" -i $m3u8UrlToDownloadAFileFrom -c copy -crf 50 $tempVideoFilePath *> $null
 try {
-	New-Item $pathToSaveDownloadedFile -Force
+	New-Item $pathToSaveDownloadedFile -Force > $null
 	Move-Item $tempVideoFilePath $pathToSaveDownloadedFile -Force
 	$currentStateOfProgram = . "$PSScriptRoot/../state_management/get_state.ps1"
 	Set-Content $pathToSaveLinkToAnime $currentStateOfProgram.href -Force

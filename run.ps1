@@ -1,7 +1,9 @@
 [Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::CursorVisible = $false
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
-chcp 65001 # UTF-8 code page
+if ($IsWindows) {
+	chcp 65001 > $null # UTF-8 code page
+}
 Clear-Host
 class SelectParameters {
 	[ordered]$dictForSelect

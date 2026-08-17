@@ -5,21 +5,26 @@ param(
 	[bool]$wantToDownload
 )
 
+$kodikPlayerHost = ([Uri]::new($kodikEpisodePlayerUrl)).Host
+$kodikPlayerOrigin = "https://$kodikPlayerHost"
+
 $kodikEpisodePlayerHeaders = @{
-	'Referer'        = 'https://animego.one/'
+	'Referer'        = 'https://animego.me/'
 	'User-Agent'     = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
 	'Accept'         = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
 }
 
-$htmlKodikPlayer = Invoke-WebRequest $kodikEpisodePlayerUrl -Method 'Get' -Headers $kodikEpisodePlayerHeaders
+$htmlKodikPlayer = (Invoke-WebRequest $kodikEpisodePlayerUrl -Method 'Get' -Headers $kodikEpisodePlayerHeaders).Content
 
-if ($htmlKodikPlayer -match "urlParams = '(?<parameters>(.)*)';") {
-	$kodikParameters = $Matches.parameters
+if ($htmlKodikPlayer -notmatch "urlParams = '(?<parameters>(.)*)';") {
+	Write-Host 'Kodik player did not return its parameters. Click any button to return'
+	[Console]::ReadKey($true) > $null
+	return
 }
 
-$kodikParametersJsonObject = ConvertFrom-Json -InputObject $kodikParameters
+$kodikParametersJsonObject = ConvertFrom-Json -InputObject $Matches.parameters
 
-if ($kodikEpisodePlayerUrl -match 'kodik\.info\/(?<type>(.)+)\/(?<video_id>[0-9]+)\/(?<hash>(.)+)\/') {
+if ($kodikEpisodePlayerUrl -match '/(?<type>[a-z]+)/(?<video_id>[0-9]+)/(?<hash>[0-9a-zA-Z]+)/') {
 	$kodikParametersJsonObject | Add-Member -Name 'hash' -MemberType NoteProperty -Value $Matches.hash
 	$kodikParametersJsonObject | Add-Member -Name 'id' -MemberType NoteProperty -Value $Matches.video_id
 	$kodikParametersJsonObject | Add-Member -Name 'type' -MemberType NoteProperty -Value $Matches.type
@@ -36,15 +41,41 @@ if ($kodikEpisodePlayerUrl -match 'kodik\.info\/(?<type>(.)+)\/(?<video_id>[0-9]
 $kodikParametersMap = @{}
 $kodikParametersJsonObject.psobject.properties | ForEach-Object { $kodikParametersMap[$_.Name] = $_.Value }
 $formUrlEncoded = ($kodikParametersMap.GetEnumerator() | ForEach-Object {"$($_.Key)=$($_.Value)"}) -join '&'
-$kodikLinksResponse = Invoke-RestMethod -Uri 'https://kodik.info/ftor' -ContentType 'application/x-www-form-urlencoded' -Method POST -Body $formUrlEncoded
+
+$kodikFtorHeaders = @{
+	'Referer'          = $kodikEpisodePlayerUrl
+	'Origin'           = $kodikPlayerOrigin
+	'User-Agent'       = $kodikEpisodePlayerHeaders['User-Agent']
+	'x-requested-with' = 'XMLHttpRequest'
+}
+
+$kodikLinksResponse = Invoke-RestMethod -Uri "$kodikPlayerOrigin/ftor" -ContentType 'application/x-www-form-urlencoded' -Method POST -Headers $kodikFtorHeaders -Body $formUrlEncoded
+
 $kodikQualitiesOptions = New-Object System.Collections.SortedList
-$kodikLinksResponse.links.psobject.properties | ForEach-Object { $kodikQualitiesOptions.Add([int]::Parse($_.Name), $_.Value.src) }
+$kodikLinksResponse.links.psobject.properties | ForEach-Object {
+	$kodikQualitySource = $_.Value
+	if ($kodikQualitySource -is [System.Object[]]) {
+		$kodikQualitySource = $kodikQualitySource[0]
+	}
+
+	if ($null -ne $kodikQualitySource -and -not [string]::IsNullOrEmpty($kodikQualitySource.src)) {
+		$kodikQualitiesOptions.Add([int]::Parse($_.Name), $kodikQualitySource.src)
+	}
+}
+
+if ($kodikQualitiesOptions.Count -eq 0) {
+	Write-Host 'Kodik returned no playable links. Click any button to return'
+	[Console]::ReadKey($true) > $null
+	return
+}
+
 $encodedKodikLink = $kodikQualitiesOptions.GetByIndex($kodikQualitiesOptions.Count - 1)
 
-# the funcitons below are just a rewritten by copilot version of decoding from python's library anime_parsers_ru
+$script:_cryptStep = 18
+
 function Convert-Char {
 	param ($letter, $num)
-	
+
 	$alph = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	$low = ($letter -cmatch "[a-z]")
 
@@ -63,7 +94,6 @@ function Convert-String {
 		[string]$encodedUrl
 	)
 
-	# Base64 decoding requires padding
 	function Base64-Decode {
 		param ([string]$encodedString)
 
@@ -95,6 +125,16 @@ function Convert-String {
 	throw "Decryption Failure"
 }
 
-$decodedKodikLink = Convert-String $encodedKodikLink
-$kodikVideoLink = "https:$decodedKodikLink"
-. "$PSScriptRoot/helpers/open_player.ps1" -blob $kodikVideoLink 'https://kodik.info/' $wantToDownload
+if ($encodedKodikLink.Contains('//')) {
+	$decodedKodikLink = $encodedKodikLink
+} else {
+	$decodedKodikLink = Convert-String $encodedKodikLink
+}
+
+if ($decodedKodikLink.StartsWith('//')) {
+	$kodikVideoLink = "https:$decodedKodikLink"
+} else {
+	$kodikVideoLink = $decodedKodikLink
+}
+
+. "$PSScriptRoot/helpers/open_player.ps1" -blob $kodikVideoLink "$kodikPlayerOrigin/" $wantToDownload

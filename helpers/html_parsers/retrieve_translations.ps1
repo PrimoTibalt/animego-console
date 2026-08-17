@@ -3,41 +3,39 @@ param(
 	$htmlStringToGetTranslations
 )
 
+$getTranslationsResultMap = [ordered]@{}
+if ([string]::IsNullOrEmpty($htmlStringToGetTranslations)) {
+	return $getTranslationsResultMap
+}
+
 $htmlDocumentToGetTranslations = [HtmlAgilityPack.HtmlDocument]::new()
 $htmlDocumentToGetTranslations.LoadHtml($htmlStringToGetTranslations)
 
-$getTranslationsResultMap = [ordered]@{}
-$translationsNodes = $htmlDocumentToGetTranslations.DocumentNode.SelectNodes("//div[@id='video-dubbing']/span[@data-dubbing]")
-for ($i = 0; $i -lt $translationsNodes.Count; $i++) {
-	$translationNode = $translationsNodes[$i]
-	$translationName = $translationNode.SelectSingleNode('child::span').InnerText.Trim()
-	$translationDubbingId = $translationNode.GetAttributeValue('data-dubbing', 0)
-	$translationDubbingPlayersSelector = "//div[@id='video-players']/span[@data-provide-dubbing='$translationDubbingId']"
-	$translationElementsWithPlayers = $htmlDocumentToGetTranslations.DocumentNode.SelectNodes($translationDubbingPlayersSelector)
-	$playersSubDictionary = [ordered]@{}
-	for ($playerNodeIndex = 0; $playerNodeIndex -lt $translationElementsWithPlayers.Count; $playerNodeIndex++) {
-		$playerNode = $translationElementsWithPlayers[$playerNodeIndex]
-		$playerNodeName = $playerNode.SelectSingleNode('child::span').InnerText.Trim()
-		$playerNodeHref = [System.Net.WebUtility]::HtmlDecode($playerNode.GetAttributeValue('data-player', [string]::Empty))
-		$playerNodeUrl = "https:$playerNodeHref"
-		$playersSubDictionary[$playerNodeName] = $playerNodeUrl
+$providerNodes = $htmlDocumentToGetTranslations.DocumentNode.SelectNodes('//*[@data-player][@data-translation-title]')
+if ($null -eq $providerNodes) {
+	return $getTranslationsResultMap
+}
+
+for ($providerNodeIndex = 0; $providerNodeIndex -lt $providerNodes.Count; $providerNodeIndex++) {
+	$providerNode = $providerNodes[$providerNodeIndex]
+
+	$translationName = [System.Net.WebUtility]::HtmlDecode($providerNode.GetAttributeValue('data-translation-title', [string]::Empty)).Trim()
+	$playerNodeName = [System.Net.WebUtility]::HtmlDecode($providerNode.GetAttributeValue('data-provider-title', [string]::Empty)).Trim()
+	$playerNodeHref = [System.Net.WebUtility]::HtmlDecode($providerNode.GetAttributeValue('data-player', [string]::Empty)).Trim()
+
+	if ([string]::IsNullOrEmpty($translationName) -or [string]::IsNullOrEmpty($playerNodeName) -or [string]::IsNullOrEmpty($playerNodeHref)) {
+		continue
 	}
 
-	$getTranslationsResultMap[$translationName] = $playersSubDictionary
+	if ($playerNodeHref.StartsWith('//')) {
+		$playerNodeHref = "https:$playerNodeHref"
+	}
+
+	if (-not $getTranslationsResultMap.Contains($translationName)) {
+		$getTranslationsResultMap[$translationName] = [ordered]@{}
+	}
+
+	$getTranslationsResultMap[$translationName][$playerNodeName] = $playerNodeHref
 }
 
 return $getTranslationsResultMap
-
-$dictOfDubs = [ordered]@{}
-foreach ($dub in $listOfDubs.Split(';')) {
-	$namePlayersPair = $dub.Split(',')
-	$subDict = [ordered]@{}
-	foreach ($playerLinkPair in $namePlayersPair[1].Split('||')) {
-		if (-not [string]::IsNullOrEmpty($playerLinkPair)) {
-			$splitted = $playerLinkPair.Split(':')
-			$subDict[$splitted[0]] = 'https:' + $splitted[1]
-		}
-	}
-
-	$dictOfDubs[$namePlayersPair[0]] = $subDict
-}

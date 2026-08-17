@@ -21,6 +21,10 @@ if ([string]::IsNullOrEmpty($rememberMeFileContents[0]) -or [string]::IsNullOrEm
   return $null
 }
 
+if ($rememberMeFileContents[0] -eq 'deleted') {
+  return $null
+}
+
 $expirationDate = [DateTime]::Parse($rememberMeFileContents[1])
 
 return [PSCustomObject]@{

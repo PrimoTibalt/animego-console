@@ -126,8 +126,17 @@ while ($true) { # Loop for anime names
 				break
 			}
 
-			$vlc = 'C:\Program Files\VideoLAN\VLC\vlc.exe'
-			& $vlc $selectedEpisodePath --fullscreen
+			$vlc = . "$PSScriptRoot/helpers/platform_management/get_vlc_path.ps1"
+			if ($null -eq $vlc) {
+				Write-Host 'VLC player was not found. Click any button to return...'
+				[Console]::ReadKey($true) > $null
+				. "$PSScriptRoot/helpers/clean_console.ps1" 1
+				continue
+			}
+
+			$lineBeforeDownloadedPlayback = $Host.UI.RawUI.CursorPosition.Y
+			& $vlc $selectedEpisodePath --fullscreen *> $null
+			. "$PSScriptRoot/helpers/clean_console_to.ps1" $lineBeforeDownloadedPlayback
 			. "$PSScriptRoot/helpers/state_management/set_last_dubbing.ps1" $selectedDubFolderName
 			. "$PSScriptRoot/helpers/state_management/add_episode.ps1" $selectedEpisodeNumber
 			. "$PSScriptRoot/helpers/watched_management/synchronize_from_state.ps1"

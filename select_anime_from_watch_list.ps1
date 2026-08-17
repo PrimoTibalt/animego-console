@@ -6,7 +6,7 @@ $watchListSelectParameters.returnKey = $true
 $watchListSelectParameters.actionOnF = [Action[[string],[string]]]{
 	param([string]$addToFavoriteAnimeName, [string]$addToFavoriteAnimeHref)
 
-	$addToFavoriteAnimeHref = "https://animego.one$addToFavoriteAnimeHref"
+	$addToFavoriteAnimeHref = "https://animego.me$addToFavoriteAnimeHref"
 	. "$PSScriptRoot/helpers/favorite_management/add_new_favorite.ps1" $addToFavoriteAnimeName $addToFavoriteAnimeHref
 }
 $watchListSelectParameters.actionOnEachKey = [Func[[string],[string]]]{

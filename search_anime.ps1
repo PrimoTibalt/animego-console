@@ -7,7 +7,7 @@ $searchAnimeSelectParameters.showMessageOnSelect = $false
 $searchAnimeSelectParameters.actionOnF = [Action[[string],[string]]]{
 	param([string]$addToFavoriteAnimeName, [string]$addToFavoriteAnimeHref)
 
-	$addToFavoriteAnimeHref = "https://animego.one$addToFavoriteAnimeHref"
+	$addToFavoriteAnimeHref = "https://animego.me$addToFavoriteAnimeHref"
 	. "$PSScriptRoot/helpers/favorite_management/add_new_favorite.ps1" $addToFavoriteAnimeName $addToFavoriteAnimeHref
 }
 $searchAnimeSelectParameters.actionOnEachKey = [Func[[string],[string]]]{
@@ -28,14 +28,13 @@ $searchAnimeSelectParameters.actionOnR = [Action[[string]]]{
 	. "$PSScriptRoot/helpers/favorite_management/remove_favorite.ps1" $removeFromFavoriteAnimeName
 }
 
+$pwshExecutable = . "$PSScriptRoot/helpers/platform_management/get_pwsh_executable.ps1"
+
 $pathToCredentialsFile = "$PSScriptRoot/temp/creds.txt"
 $userCreds = . "$PSScriptRoot/helpers/login_management/login.ps1" $pathToCredentialsFile
 $pathToRememberMeToken = "$PSScriptRoot/temp/rememberme.txt"
 if ($null -ne $userCreds) {
-	$rememberMeTokenData = . "$PSScriptRoot/helpers/login_management/get_rememberme_token.ps1" $userCreds.UsernameOrEmail $userCreds.UserPassword $pathToRememberMeToken
-	if ($null -ne $rememberMeTokenData) {
-		$rememberMeToken = $rememberMeTokenData.RememberMeToken
-	}
+	. "$PSScriptRoot/helpers/login_management/get_rememberme_token.ps1" $userCreds.UsernameOrEmail $userCreds.UserPassword $pathToRememberMeToken > $null
 }
 
 $pathToSearchOutputLog = "$PSScriptRoot/temp/search_log.txt" 
@@ -113,7 +112,7 @@ while ($true) { # Reading keys from console in a loop
 		$animeLinkFull = . "$PSScriptRoot/helpers/watched_management/synchronize_to_state.ps1" $animeNameFromSearch
 		if ([string]::IsNullOrEmpty($animeLinkFull)) {
 			$animeLink = $searchAnimeSelectParameters.dictForSelect.$animeNameFromSearch
-			$animeLinkFull = "https://animego.one$animeLink"
+			$animeLinkFull = "https://animego.me$animeLink"
 			. "$PSScriptRoot/helpers/state_management/create_state.ps1" $animeNameFromSearch $animeLinkFull
 		}
 
@@ -142,7 +141,15 @@ while ($true) { # Reading keys from console in a loop
 			Stop-Process -InputObject $requestAnimeProcess -Force
 		}
 
-		$requestAnimeProcess = Start-Process -FilePath pwsh.exe -ArgumentList "-File `"`"$PSScriptRoot\helpers\request_anime_by_name.ps1`"`" -inputTextFromSearchScript `"$searchInputText`" -rememberMeToken `"$rememberMeToken`"" -RedirectStandardOutput $pathToSearchOutputLog -NoNewWindow -PassThru
+		$requestAnimeArguments = @(
+			'-NoProfile'
+			'-File'
+			"`"$PSScriptRoot/helpers/request_anime_by_name.ps1`""
+			'-inputTextFromSearchScript'
+			"`"$searchInputText`""
+		)
+
+		$requestAnimeProcess = Start-Process -FilePath $pwshExecutable -ArgumentList $requestAnimeArguments -RedirectStandardOutput $pathToSearchOutputLog -NoNewWindow -PassThru
 		[System.Threading.Thread]::Sleep(50)
 	}
 }
